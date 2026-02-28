@@ -21,7 +21,9 @@ import string
 import hashlib
 import re
 import boto3
-from botocore.exceptions import ClientError
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # ─────────────────────────────────────────────
 # ページ設定 & CSS
@@ -94,14 +96,8 @@ def get_dynamodb():
     return session.resource('dynamodb')
 
 
-@st.cache_resource
-def get_ses_client():
-    session = boto3.Session(
-        aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
-        region_name=st.secrets["AWS_REGION"]
-    )
-    return session.client('ses')
+GMAIL_ADDRESS  = st.secrets.get("GMAIL_ADDRESS", "")
+GMAIL_APP_PASS = st.secrets.get("GMAIL_APP_PASSWORD", "")
 
 
 def tbl_rooms():
@@ -133,7 +129,6 @@ def norm_email(email: str) -> str:
 # ─────────────────────────────────────────────
 
 OTP_EXPIRE_MINUTES = 10
-SES_FROM = st.secrets.get("SES_FROM_ADDRESS", "noreply@example.com")
 
 
 def generate_otp() -> str:
@@ -167,6 +162,7 @@ def verify_otp(email: str, input_code: str) -> bool:
 
 
 def send_otp_email(email: str, code: str, purpose: str = "メール確認") -> bool:
+    """GmailのSMTPでOTPメールを送信する。"""
     subject = f"【StudyConnect】{purpose}コード"
     body_html = f"""
 <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;">
@@ -179,21 +175,21 @@ def send_otp_email(email: str, code: str, purpose: str = "メール確認") -> b
   身に覚えのない場合は無視してください。</p>
 </div>"""
     body_text = f"{purpose}コード: {code}\n{OTP_EXPIRE_MINUTES}分以内に入力してください。"
+
     try:
-        get_ses_client().send_email(
-            Source=SES_FROM,
-            Destination={'ToAddresses': [email]},
-            Message={
-                'Subject': {'Data': subject, 'Charset': 'UTF-8'},
-                'Body': {
-                    'Html': {'Data': body_html, 'Charset': 'UTF-8'},
-                    'Text': {'Data': body_text, 'Charset': 'UTF-8'},
-                }
-            }
-        )
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"]    = GMAIL_ADDRESS
+        msg["To"]      = email
+        msg.attach(MIMEText(body_text, "plain", "utf-8"))
+        msg.attach(MIMEText(body_html, "html",  "utf-8"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(GMAIL_ADDRESS, GMAIL_APP_PASS)
+            smtp.sendmail(GMAIL_ADDRESS, email, msg.as_string())
         return True
-    except ClientError as e:
-        st.error(f"メール送信エラー: {e.response['Error']['Message']}")
+    except smtplib.SMTPAuthenticationError:
+        st.error("Gmail認証エラー: アプリパスワードを確認してください")
         return False
     except Exception as e:
         st.error(f"メール送信エラー: {e}")
