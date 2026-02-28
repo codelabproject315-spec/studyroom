@@ -69,16 +69,6 @@ st.markdown("""
         word-break: break-all;
     }
 
-    .participants-badge {
-        display: inline-block;
-        background: #00b894;
-        color: white;
-        border-radius: 20px;
-        padding: 0.2rem 0.8rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-    }
-
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -121,7 +111,6 @@ def load_from_aws():
                     new_rooms[exam_name].append({
                         "id": item['item_id'],
                         "url": item['url'],
-                        "participants": item.get('participants', []),
                         "created_at": datetime.fromisoformat(item['created_at']),
                         "host": item.get('host', '匿名')
                     })
@@ -148,7 +137,6 @@ EXAMS_DEFAULT = {
 def init_state():
     if "rooms" not in st.session_state: st.session_state.rooms = {}
     if "my_name" not in st.session_state: st.session_state.my_name = ""
-    if "my_rooms" not in st.session_state: st.session_state.my_rooms = set()
     if "custom_exams" not in st.session_state: st.session_state.custom_exams = {}
     if "admin_urls" not in st.session_state:
         st.session_state.admin_urls = {k: "" for k in EXAMS_DEFAULT.keys()}
@@ -161,42 +149,15 @@ def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
 def create_new_room(exam_name, url, user_name):
+    """新しいルームを追加"""
     room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         table.put_item(Item={
             'item_id': room_id,
             'url': url,
-            'participants': [user_name] if user_name else ["匿名"],
             'created_at': datetime.now().isoformat(),
             'host': user_name if user_name else "匿名"
         })
-    st.session_state.my_rooms.add(room_id)
-
-def join_existing_room(room_id, user_name):
-    if table:
-        resp = table.get_item(Key={'item_id': room_id})
-        if 'Item' in resp:
-            item = resp['Item']
-            participants = item.get('participants', [])
-            if user_name and user_name not in participants:
-                participants.append(user_name)
-                table.put_item(Item={**item, 'participants': participants})
-    st.session_state.my_rooms.add(room_id)
-
-def leave_room(room_id, user_name):
-    if table:
-        resp = table.get_item(Key={'item_id': room_id})
-        if 'Item' in resp:
-            item = resp['Item']
-            participants = item.get('participants', [])
-            if user_name in participants:
-                participants.remove(user_name)
-            
-            if not participants:
-                table.delete_item(Key={'item_id': room_id})
-            else:
-                table.put_item(Item={**item, 'participants': participants})
-    st.session_state.my_rooms.discard(room_id)
 
 def is_url_valid(url):
     return url.startswith("http://") or url.startswith("https://")
@@ -246,7 +207,7 @@ with st.sidebar:
         time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# コンテンツ表示
+# コンテンツ表示（タブ形式）
 # ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
@@ -268,36 +229,19 @@ for idx, exam_name in enumerate(exam_names):
                 st.info("現在アクティブなルームはありません。右側から新しいルームを追加してください。")
             else:
                 for room in rooms_list:
-                    is_joined = room['id'] in st.session_state.my_rooms
+                    # カウント・名前表示機能を削除し、シンプルな表示に変更
                     st.markdown(f"""
-                    <div class="exam-card {'active' if is_joined else ''}">
+                    <div class="exam-card active">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <strong style="font-size:1.1rem;">👋 {room['host']} のルーム</strong>
-                            <span class="participants-badge">👥 {len(room['participants'])}人が参加中</span>
                         </div>
                         <div class="room-url-box">
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
                     
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        if not is_joined:
-                            # ★修正箇所: HTMLフォームを使用してDB更新とURL遷移を確実に実行
-                            if st.button("通話に参加する🚀", key=f"join_act_{room['id']}", type="primary", use_container_width=True):
-                                join_existing_room(room['id'], st.session_state.my_name)
-                                # HTMLのメタタグを使用して強制的にリダイレクトさせる（ポップアップブロックを回避）
-                                st.markdown(f'<meta http-equiv="refresh" content="0; url={room["url"]}">', unsafe_allow_html=True)
-                                st.rerun()
-                        else:
-                            st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
-                    with c2:
-                        if is_joined:
-                            if st.button("退出する", key=f"leave_{room['id']}", type="secondary", use_container_width=True):
-                                leave_room(room['id'], st.session_state.my_name); st.rerun()
-                    
-                    if room['participants']:
-                        st.caption(f"参加メンバー: {', '.join(room['participants'])}")
+                    # URLに直接飛ぶボタンのみを配置
+                    st.link_button("通話に参加する🚀", room['url'], key=f"lnk_{room['id']}", type="primary", use_container_width=True)
                     st.divider()
 
         with col_right:
