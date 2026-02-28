@@ -363,6 +363,25 @@ st.markdown("""
         box-shadow: none !important;
     }
 
+    /* ── Streamlit白背景を根本から上書き ── */
+    /* メインエリア全体 */
+    .stApp > div, .stApp section, .stApp .main {
+        background: transparent !important;
+    }
+    /* st.container / st.columns の白背景 */
+    div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"],
+    div[data-testid="column"],
+    div[class*="stColumn"],
+    div[class*="block-container"] {
+        background: transparent !important;
+    }
+    /* Streamlitが注入するカード白背景 */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div,
+    div[data-testid="stVerticalBlockBorderWrapper"] > div > div {
+        background: transparent !important;
+    }
+
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -625,12 +644,12 @@ def show_user_management_panel():
                 col_info, col_del = st.columns([5, 1])
                 with col_info:
                     html = (
-                        '<div class="user-row-card">'
-                        f'<span class="user-row-name">{name}</span>'
-                        f'<span class="user-row-email">{email}</span>'
-                        '<span class="user-row-meta">'
+                        '<div class="user-row-card" style="background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.1)!important;border-radius:12px;padding:0.85rem 1.1rem;margin-bottom:0.5rem;display:grid;grid-template-columns:140px 1fr auto;align-items:center;gap:0 1.5rem;">'
+                        f'<span class="user-row-name" style="color:#e8e8f0;font-weight:700;">{name}</span>'
+                        f'<span class="user-row-email" style="color:rgba(255,255,255,0.6);font-size:0.88rem;">{email}</span>'
+                        '<span class="user-row-meta" style="display:flex;align-items:center;gap:0.8rem;">'
                         + admin_tag +
-                        f'<span class="user-row-date">登録: {date}</span>'
+                        f'<span class="user-row-date" style="color:rgba(255,255,255,0.4);font-size:0.82rem;white-space:nowrap;">登録: {date}</span>'
                         '</span>'
                         '</div>'
                     )
@@ -864,13 +883,16 @@ for idx, exam_name in enumerate(exam_names):
                 </div>""", unsafe_allow_html=True)
             else:
                 for room in rooms_list:
-                    st.markdown(f"""
-                    <div class="room-card">
-                        <div class="room-card-host">👋 {room['host']} のルーム</div>
-                        <div class="room-url-box">
-                            <a href="{room['url']}" target="_blank">{room['url']}</a>
-                        </div>
-                    </div>""", unsafe_allow_html=True)
+                    _host = room['host']
+                    _url  = room['url']
+                    st.markdown(
+                        f'<div class="room-card" style="background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1rem;">'
+                        f'<div class="room-card-host" style="color:#e8e8f0;font-weight:700;margin-bottom:0.8rem;">👋 {_host} のルーム</div>'
+                        f'<div class="room-url-box" style="background:rgba(255,255,255,0.07)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:10px;padding:0.9rem 1.1rem;word-break:break-all;">'
+                        f'<a href="{_url}" target="_blank" style="color:#93c5fd!important;font-size:0.84rem;text-decoration:none;">{_url}</a>'
+                        f'</div></div>',
+                        unsafe_allow_html=True
+                    )
                     st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
 
         with col_right:
