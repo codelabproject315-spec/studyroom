@@ -535,22 +535,25 @@ def show_user_management_panel():
             for u in sorted(users, key=lambda x: x['created_at']):
                 is_self = u['email'] == st.session_state.current_user['email']
                 admin_tag = '<span class="user-row-admin">👑 管理者</span>' if u['is_admin'] else ""
+                name = u['display_name']
+                email = u['email']
+                date = u['created_at'][:10]
                 col_info, col_del = st.columns([5, 1])
                 with col_info:
-                    st.markdown(f"""
-                    <div class="user-row-card">
-                        <div>
-                            <span class="user-row-name">{u['display_name']}</span>
-                            <span class="user-row-email">{u['email']}</span>
-                            {admin_tag}
-                            <div class="user-row-date">登録: {u['created_at'][:10]}</div>
-                        </div>
-                    </div>""", unsafe_allow_html=True)
+                    html = (
+                        '<div class="user-row-card">'
+                        f'<span class="user-row-name">{name}</span>'
+                        f'<span class="user-row-email">{email}</span>'
+                        + admin_tag +
+                        f'<div class="user-row-date">登録: {date}</div>'
+                        '</div>'
+                    )
+                    st.markdown(html, unsafe_allow_html=True)
                 with col_del:
                     st.markdown("<div style='margin-top:0.5rem'></div>", unsafe_allow_html=True)
-                    if st.button("🗑️", key=f"del_{u['email']}", disabled=is_self,
+                    if st.button("🗑️", key=f"del_{email}", disabled=is_self,
                                  help="自分自身は削除できません" if is_self else "このユーザーを削除"):
-                        if db_delete_user(u['email']): st.success(f"{u['display_name']} を削除しました"); st.rerun()
+                        if db_delete_user(email): st.success(f"{name} を削除しました"); st.rerun()
                         else: st.error("削除に失敗しました")
 
     with st.expander("🔑 パスワードをリセット"):
