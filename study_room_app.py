@@ -283,11 +283,13 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            # st.link_buttonからkeyを削除しTypeErrorを回避。
-                            # 参加登録を確実に行うため、説明文付きのボタンに変更。
-                            st.link_button("1. 通話に参加する🚀", room['url'], type="primary", use_container_width=True)
-                            if st.button("2. 参加者名簿に載る👥", key=f"join_db_{room['id']}", use_container_width=True):
+                            # ★変更点: st.button に一本化し、JSで別窓を開きつつDBを更新
+                            if st.button("通話に参加する🚀", key=f"join_act_{room['id']}", type="primary", use_container_width=True):
+                                # 1. DBのカウントを更新
                                 join_existing_room(room['id'], st.session_state.my_name)
+                                # 2. JavaScriptで別タブを開く
+                                js = f'window.open("{room["url"]}", "_blank").focus();'
+                                st.markdown(f'<img src="x" onerror=\'{js}\' style="display:none;">', unsafe_allow_html=True)
                                 st.rerun()
                         else:
                             st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
