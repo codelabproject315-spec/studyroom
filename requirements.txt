@@ -1,3 +1,2 @@
 streamlit>=1.28.0
 boto3
-streamlit-google-auth==1.1.8
