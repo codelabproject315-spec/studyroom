@@ -30,8 +30,9 @@ st.markdown("""
 
     html, body, [class*="css"] {
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
+        color: #e8e8f0;
     }
-    .stApp { background: #f0f2f6; }
+    .stApp { background: #0f0f1a; }
 
     /* ── サイドバー全体 ── */
     [data-testid="stSidebar"] {
@@ -152,14 +153,14 @@ st.markdown("""
         font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.8rem;
     }
     .room-url-box {
-        background: #f0f2f6;
-        border: 1px solid #e2e4ea;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
         border-radius: 10px;
         padding: 0.9rem 1.1rem;
         word-break: break-all;
     }
     .room-url-box a {
-        color: #3b5bdb !important;
+        color: #93c5fd !important;
         font-size: 0.84rem;
         font-weight: 500;
         text-decoration: none;
@@ -168,27 +169,27 @@ st.markdown("""
 
     /* ── 空ステート ── */
     .empty-state {
-        background: #fff; border-radius: 16px; padding: 2.8rem 2rem;
-        text-align: center; border: 2px dashed #ddd8f5; color: #999;
+        background: rgba(255,255,255,0.04); border-radius: 16px; padding: 2.8rem 2rem;
+        text-align: center; border: 2px dashed rgba(255,255,255,0.15); color: rgba(255,255,255,0.45);
     }
     .empty-state-icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
-    .empty-state-title { font-weight: 700; color: #555; margin-bottom: 0.3rem; }
+    .empty-state-title { font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem; }
     .empty-state-sub { font-size: 0.85rem; }
 
     /* ── ルーム追加パネル ── */
-    .add-room-title { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.2rem; }
-    .add-room-sub { font-size: 0.78rem; color: #888; margin-bottom: 0.6rem; }
+    .add-room-title { font-size: 0.95rem; font-weight: 700; color: #e8e8f0; margin-bottom: 0.2rem; }
+    .add-room-sub { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 0.6rem; }
 
     /* ── セクションタイトル ── */
     .section-title {
-        font-size: 1.05rem; font-weight: 800; color: #1a1a2e;
+        font-size: 1.05rem; font-weight: 800; color: #e8e8f0;
         margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
     }
 
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
         background: #f0eef8;
-        border: 1px solid #e2e4ea;
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px;
         padding: 0.9rem 1.1rem;
         margin-bottom: 0.6rem;
@@ -240,28 +241,29 @@ st.markdown("""
 
     /* ── タブ ── */
     .stTabs [data-baseweb="tab-list"] {
-        background: #e8eaed; border-radius: 12px; padding: 4px; gap: 2px;
+        background: rgba(255,255,255,0.07); border-radius: 12px; padding: 4px; gap: 2px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 9px !important; font-weight: 600 !important;
         font-size: 0.84rem !important; padding: 0.4rem 1rem !important;
+        color: rgba(255,255,255,0.6) !important;
     }
     .stTabs [aria-selected="true"] {
-        background: #1a1a2e !important; color: white !important;
+        background: rgba(102,126,234,0.4) !important; color: white !important;
     }
 
     /* ── ボタン ── */
     .stButton > button[kind="primary"] {
-        background: #1a1a2e !important; border: none !important;
+        background: rgba(102,126,234,0.75) !important; border: none !important;
         border-radius: 10px !important; font-weight: 700 !important;
-        transition: opacity 0.2s !important;
+        transition: all 0.2s !important;
     }
-    .stButton > button[kind="primary"]:hover { opacity: 0.82 !important; }
+    .stButton > button[kind="primary"]:hover { background: rgba(102,126,234,1) !important; }
 
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
-        background: #ffffff;
-        border: 1px solid #e2e4ea;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px;
         padding: 0.85rem 1.1rem;
         margin-bottom: 0.5rem;
@@ -272,10 +274,10 @@ st.markdown("""
         align-items: center;
         gap: 0 1.5rem;
     }
-    .user-row-name { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
-    .user-row-email { font-size: 0.88rem; color: #444; font-weight: 500; }
+    .user-row-name { font-size: 1rem; font-weight: 700; color: #e8e8f0; }
+    .user-row-email { font-size: 0.88rem; color: rgba(255,255,255,0.6); font-weight: 500; }
     .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
-    .user-row-date { font-size: 0.82rem; color: #888; font-weight: 500; white-space: nowrap; }
+    .user-row-date { font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 500; white-space: nowrap; }
     .user-row-admin {
         display: inline-block;
         background: linear-gradient(135deg, #f59e0b, #ef4444);
@@ -286,10 +288,16 @@ st.markdown("""
 
     /* ── expander 共通 ── */
     [data-testid="stExpander"] {
-        background: #fff !important;
-        border: 1px solid #e2e4ea !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
         border-radius: 14px !important;
         overflow: hidden;
+    }
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] p,
+    [data-testid="stExpander"] span,
+    [data-testid="stExpander"] label {
+        color: #e8e8f0 !important;
     }
     /* サイドバー内 expander は濃色 */
     [data-testid="stSidebar"] [data-testid="stExpander"] {
@@ -321,10 +329,10 @@ st.markdown("""
 
     /* ── メインコンテナ（border=True）を白カードに統一 ── */
     [data-testid="stVerticalBlockBorderWrapper"] {
-        background: #ffffff !important;
-        border: 1px solid #e2e4ea !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
         border-radius: 14px !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04) !important;
+        box-shadow: none !important;
     }
 
     footer { visibility: hidden; }
