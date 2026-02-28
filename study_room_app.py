@@ -41,7 +41,7 @@ credentials_dict = {
 with open(CREDENTIALS_PATH, "w") as f:
     json.dump(credentials_dict, f)
 
-# インスタンス化（最新の引数名を使用）
+# インスタンス化
 authenticate = Authenticate(
     secret_credentials_path=CREDENTIALS_PATH,
     cookie_name='study_connect_cookie',
@@ -50,9 +50,13 @@ authenticate = Authenticate(
     cookie_expiry_days=30,
 )
 
-# 【修正箇所】メソッド名を正しい綴りに変更
-# ログでエラーになっていた check_authenticity() から変更しました
-authenticate.check_authentification()
+# 【重要】認証チェックの実行
+try:
+    authenticate.check_authentification()
+except Exception:
+    # メソッド名が環境により異なる場合のフォールバック
+    if hasattr(authenticate, 'check_authenticity'):
+        authenticate.check_authenticity()
 
 # ログインチェック
 if not st.session_state.get('connected'):
@@ -87,7 +91,7 @@ st.markdown("""
     .exam-card.active { border-color: #00b894; background: linear-gradient(135deg, #f0fff8 0%, #ffffff 100%); }
     .room-url-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     border-radius: 12px; padding: 1.2rem; color: white; margin: 1rem 0; text-align: center; }
-    .room-url-box a { color: #ffeaa7; font-weight: 700; word-break: break-all; }
+    .room-url-box a { color: #ffeaa7; font-weight: 700; word-break: break-all; text-decoration: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,25 +117,32 @@ table = get_db_table()
 def load_from_aws():
     if table is None: return
     try:
+        # 管理設定の読み込み
         resp = table.get_item(Key={'item_id': 'config_master'})
         if 'Item' in resp:
             st.session_state.admin_urls = resp['Item'].get('admin_urls', st.session_state.get('admin_urls', {}))
             st.session_state.custom_exams = resp['Item'].get('custom_exams', {})
 
+        # ルーム一覧の読み込み
         items = table.scan().get('Items', [])
         new_rooms = {}
         for item in items:
-            if not item['item_id'].startswith('room_'): continue
-            parts = item['item_id'][len('room_'):].rsplit('_', 1)
-            if len(parts) != 2: continue
-            exam_name = parts[0]
-            if exam_name not in new_rooms: new_rooms[exam_name] = []
-            new_rooms[exam_name].append({
-                "id": item['item_id'],
-                "url": item['url'],
-                "created_at": datetime.fromisoformat(item['created_at']),
-                "host": item.get('host', '匿名')
-            })
+            iid = item.get('item_id', '')
+            if not iid.startswith('room_'): continue
+            
+            # IDから検定名を正しく抽出
+            try:
+                parts = iid[len('room_'):].rsplit('_', 1)
+                exam_name = parts[0]
+                if exam_name not in new_rooms: new_rooms[exam_name] = []
+                new_rooms[exam_name].append({
+                    "id": iid,
+                    "url": item.get('url', ''),
+                    "created_at": datetime.fromisoformat(item.get('created_at', datetime.now().isoformat())),
+                    "host": item.get('host', '匿名')
+                })
+            except: continue
+            
         st.session_state.rooms = new_rooms
     except Exception as e:
         st.warning(f"データ読込エラー: {e}")
@@ -168,6 +179,7 @@ def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
 def create_new_room(exam_name, url, host_name):
+    """ルーム作成時にDynamoDBに保存"""
     room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         try:
@@ -197,7 +209,7 @@ with st.sidebar:
     st.divider()
     with st.expander("➕ 検定を追加"):
         nx_name = st.text_input("検定名", key="new_ex_name")
-        nx_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "💡"], key="new_ex_icon")
+        nx_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "💡", "🎯"], key="new_ex_icon")
         if st.button("追加", key="new_ex_btn", type="primary"):
             if nx_name:
                 st.session_state.custom_exams[nx_name] = {"icon": nx_icon, "description": "Custom"}
@@ -211,6 +223,7 @@ with st.sidebar:
 st.markdown('<div class="main-header"><h1>📚 StudyConnect</h1></div>', unsafe_allow_html=True)
 st.divider()
 
+# 最新データの再読み込み
 load_from_aws()
 all_exams = get_all_exams()
 tabs = st.tabs([f"{v['icon']} {k}" for k, v in all_exams.items()])
@@ -225,13 +238,14 @@ for idx, (exam_name, info) in enumerate(all_exams.items()):
             if not rooms_list:
                 st.info("アクティブなルームはありません。")
             else:
-                for r_idx, room in enumerate(rooms_list):
+                for room in rooms_list:
                     st.markdown(f"""
                     <div class="exam-card active">
                         <strong>👋 {room['host']} のルーム</strong>
                         <div class="room-url-box"><a href="{room['url']}" target="_blank">{room['url']}</a></div>
                     </div>""", unsafe_allow_html=True)
-                    st.link_button("通話に参加する🚀", room['url'], use_container_width=True)
+                    # 重複エラーを防ぐためのユニークなキーを付与
+                    st.link_button("通話に参加する🚀", room['url'], key=f"btn_{room['id']}", use_container_width=True)
                     st.divider()
 
         with col_r:
@@ -244,3 +258,5 @@ for idx, (exam_name, info) in enumerate(all_exams.items()):
                         create_new_room(exam_name, u_in, login_user_name)
                         st.balloons()
                         st.rerun()
+                    else:
+                        st.error("有効なURLを入力してください")
