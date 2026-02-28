@@ -229,7 +229,6 @@ for idx, exam_name in enumerate(exam_names):
                 st.info("現在アクティブなルームはありません。右側から新しいルームを追加してください。")
             else:
                 for room in rooms_list:
-                    # カウント・名前表示機能を削除し、シンプルな表示に変更
                     st.markdown(f"""
                     <div class="exam-card active">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -240,8 +239,8 @@ for idx, exam_name in enumerate(exam_names):
                         </div>
                     </div>""", unsafe_allow_html=True)
                     
-                    # URLに直接飛ぶボタンのみを配置
-                    st.link_button("通話に参加する🚀", room['url'], key=f"lnk_{room['id']}", type="primary", use_container_width=True)
+                    # 修正点: TypeError 回避のため key 引数を削除
+                    st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
         with col_right:
