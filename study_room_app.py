@@ -244,32 +244,10 @@ st.markdown("""
 
     footer { visibility: hidden; }
 
-    /* ── Streamlit トップバーをダーク化 ── */
-    header[data-testid="stHeader"] {
-        background: #1e2235 !important;
-        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-    }
-    header[data-testid="stHeader"] button,
-    header[data-testid="stHeader"] a,
-    header[data-testid="stHeader"] span {
-        color: #c8cde8 !important;
-    }
-    header[data-testid="stHeader"] button:hover {
-        background: rgba(255,255,255,0.1) !important;
-        border-radius: 6px !important;
-    }
-    [data-testid="stToolbar"] {
-        background: #1e2235 !important;
-    }
-    [data-testid="stToolbar"] button {
-        color: #c8cde8 !important;
-    }
-    .stDeployButton button {
-        background: rgba(255,255,255,0.08) !important;
-        color: #c8cde8 !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
-        border-radius: 8px !important;
-    }
+    /* ── Streamlit トップバーを非表示 ── */
+    header[data-testid="stHeader"] { display: none !important; }
+    [data-testid="stToolbar"]      { display: none !important; }
+    .stDeployButton                { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
