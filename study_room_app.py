@@ -632,13 +632,6 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
-    st.markdown("### 👤 表示名")
-    name_input = st.text_input("ニックネーム", value=st.session_state.my_name,
-                                placeholder="例: たろう", label_visibility="collapsed")
-    if name_input != st.session_state.my_name:
-        st.session_state.my_name = name_input
-
-    st.divider()
     st.markdown("### ➕ 検定を追加")
     with st.expander("カスタム検定を追加"):
         new_exam_name = st.text_input("検定名")
