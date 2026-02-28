@@ -16,7 +16,6 @@ st.set_page_config(
 )
 
 import json
-import os
 import time
 from datetime import datetime
 import boto3
@@ -25,8 +24,8 @@ from streamlit_google_auth import Authenticate
 # ─────────────────────────────────────────────
 # 1. Google 認証設定
 # ─────────────────────────────────────────────
-# streamlit-google-auth は「JSONファイルのパス」を受け取る仕様のため、
-# Secrets の値をいったん一時ファイルに書き出す
+# streamlit-google-auth は JSONファイルパスを受け取る仕様のため
+# Secrets の値を一時ファイルに書き出す
 google_conf = st.secrets["google_auth"]
 
 CREDENTIALS_PATH = "/tmp/google_credentials.json"
@@ -52,8 +51,8 @@ authenticate = Authenticate(
     cookie_expiry_days=30,
 )
 
-# 認証チェック
-authenticate.check_authenticity()
+# ※ ライブラリのメソッド名は「authentification」(フランス語由来のtypo、正しい綴りではない)
+authenticate.check_authentification()
 
 # ログインしていない場合はログイン画面を表示して停止
 if not st.session_state.get('connected'):
@@ -247,7 +246,6 @@ tabs = st.tabs([f"{all_exams[name]['icon']} {name}" for name in exam_names])
 
 for idx, exam_name in enumerate(exam_names):
     with tabs[idx]:
-        exam = all_exams[exam_name]
         rooms_list = st.session_state.rooms.get(exam_name, [])
         col_left, col_right = st.columns([2, 1])
 
@@ -279,7 +277,7 @@ for idx, exam_name in enumerate(exam_names):
                     placeholder="https://...",
                     key=f"url_{exam_name}"
                 )
-                if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                if st.button("✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
                         create_new_room(exam_name, url_input, login_user_name)
                         st.balloons()
