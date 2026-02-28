@@ -15,34 +15,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from streamlit_google_auth import Authenticate
-from datetime import datetime
+import json
+import os
 import time
+from datetime import datetime
 import boto3
+from streamlit_google_auth import Authenticate
 
 # ─────────────────────────────────────────────
 # 1. Google 認証設定
 # ─────────────────────────────────────────────
+# streamlit-google-auth は「JSONファイルのパス」を受け取る仕様のため、
+# Secrets の値をいったん一時ファイルに書き出す
 google_conf = st.secrets["google_auth"]
 
-# ※ streamlit-google-auth の新旧バージョン差異に対応
-# 新バージョン(0.2.0+): client_id, client_secret, redirect_uri のみ
-# 旧バージョン: secret_key, cookie_name, cookie_expiry_days も指定可
-try:
-    authenticate = Authenticate(
-        client_id=google_conf['client_id'],
-        client_secret=google_conf['client_secret'],
-        redirect_uri=google_conf['redirect_uris'][0],
-        cookie_name='study_connect_cookie',
-        cookie_expiry_days=30,
-    )
-except TypeError:
-    # 引数が合わない場合は最小限の引数で試みる
-    authenticate = Authenticate(
-        client_id=google_conf['client_id'],
-        client_secret=google_conf['client_secret'],
-        redirect_uri=google_conf['redirect_uris'][0],
-    )
+CREDENTIALS_PATH = "/tmp/google_credentials.json"
+
+credentials_dict = {
+    "web": {
+        "client_id": google_conf["client_id"],
+        "client_secret": google_conf["client_secret"],
+        "redirect_uris": list(google_conf["redirect_uris"]),
+        "auth_uri": google_conf.get("auth_uri", "https://accounts.google.com/o/oauth2/auth"),
+        "token_uri": google_conf.get("token_uri", "https://oauth2.googleapis.com/token"),
+    }
+}
+
+with open(CREDENTIALS_PATH, "w") as f:
+    json.dump(credentials_dict, f)
+
+authenticate = Authenticate(
+    secret_credentials_path=CREDENTIALS_PATH,
+    cookie_name='study_connect_cookie',
+    cookie_key='study_connect_secret_key_2024',
+    redirect_uri=list(google_conf["redirect_uris"])[0],
+    cookie_expiry_days=30,
+)
 
 # 認証チェック
 authenticate.check_authenticity()
@@ -118,9 +126,8 @@ def load_from_aws():
             if not item['item_id'].startswith('room_'):
                 continue
             # フォーマット: room_{exam_name}_{unix_timestamp}
-            # タイムスタンプは末尾の数値なのでそこから逆算してexam_nameを取得
-            rest = item['item_id'][len('room_'):]          # "exam_name_1234567890"
-            parts = rest.rsplit('_', 1)                    # ["exam_name", "1234567890"]
+            rest = item['item_id'][len('room_'):]   # "exam_name_1234567890"
+            parts = rest.rsplit('_', 1)             # ["exam_name", "1234567890"]
             if len(parts) != 2:
                 continue
             exam_name = parts[0]
@@ -232,7 +239,6 @@ st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と�
             unsafe_allow_html=True)
 st.divider()
 
-# 毎回最新データを取得（db_loaded フラグ管理と分離して明示的に呼ぶ）
 load_from_aws()
 
 all_exams = get_all_exams()
