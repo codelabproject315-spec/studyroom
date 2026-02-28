@@ -1,6 +1,6 @@
 """
 学習ルーム共有アプリ - StudyConnect
-Google認証・Secrets完全統合版
+エラー修正・最新ライブラリ完全対応版
 """
 
 import streamlit as st
@@ -22,28 +22,27 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# 1. Google 認証設定
+# 1. Google 認証設定 (最新の仕様に合わせて修正)
 # ─────────────────────────────────────────────
+# Secretsから取得
 google_conf = st.secrets["google_auth"]
 
-# 一時ファイルパスの定義
+# 最新版の streamlit-google-auth は JSONファイルを介すのが最も安定します
 CREDENTIALS_PATH = "/tmp/google_credentials.json"
-
-# Secrets の値を辞書形式に整理
 credentials_dict = {
     "web": {
         "client_id": google_conf["client_id"],
         "client_secret": google_conf["client_secret"],
         "redirect_uris": list(google_conf["redirect_uris"]),
-        "auth_uri": google_conf.get("auth_uri", "https://accounts.google.com/o/oauth2/auth"),
-        "token_uri": google_conf.get("token_uri", "https://oauth2.googleapis.com/token"),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
     }
 }
 
-# 認証用JSONファイルの書き出し
 with open(CREDENTIALS_PATH, "w") as f:
     json.dump(credentials_dict, f)
 
+# インスタンス化 (引数名を最新版の 'secret_credentials_path' に修正)
 authenticate = Authenticate(
     secret_credentials_path=CREDENTIALS_PATH,
     cookie_name='study_connect_cookie',
@@ -52,7 +51,8 @@ authenticate = Authenticate(
     cookie_expiry_days=30,
 )
 
-# ライブラリのメソッド名は「authentification」
+# 【重要】ライブラリのメソッド名は「check_authentification」です
+# (最後のログで出ていた check_authenticity ではありません)
 authenticate.check_authentification()
 
 # ログインしていない場合はログイン画面を表示して停止
@@ -71,7 +71,7 @@ if not st.session_state.get('connected'):
     st.stop()
 
 # ログイン済み：ユーザー情報を取得
-user_info = st.session_state['user_info']
+user_info = st.session_state.get('user_info', {})
 login_user_name = user_info.get('name', '匿名')
 
 # ─────────────────────────────────────────────
@@ -113,8 +113,7 @@ def get_db_table():
 table = get_db_table()
 
 def load_from_aws():
-    if table is None:
-        return
+    if table is None: return
     try:
         resp = table.get_item(Key={'item_id': 'config_master'})
         if 'Item' in resp:
@@ -124,15 +123,12 @@ def load_from_aws():
         items = table.scan().get('Items', [])
         new_rooms = {}
         for item in items:
-            if not item['item_id'].startswith('room_'):
-                continue
+            if not item['item_id'].startswith('room_'): continue
             rest = item['item_id'][len('room_'):]
             parts = rest.rsplit('_', 1)
-            if len(parts) != 2:
-                continue
+            if len(parts) != 2: continue
             exam_name = parts[0]
-            if exam_name not in new_rooms:
-                new_rooms[exam_name] = []
+            if exam_name not in new_rooms: new_rooms[exam_name] = []
             new_rooms[exam_name].append({
                 "id": item['item_id'],
                 "url": item['url'],
@@ -199,15 +195,15 @@ with st.sidebar:
         st.image(picture, width=70)
     st.success(f"ログイン中: {login_user_name} さん")
 
-    if st.button("ログアウト", use_container_width=True):
+    if st.button("ログアウト", key="logout_button", use_container_width=True):
         authenticate.logout()
 
     st.divider()
     st.markdown("### ➕ 検定を追加")
     with st.expander("カスタム検定を追加"):
-        new_exam_name = st.text_input("検定名")
-        new_exam_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "🔬", "💡", "🎯", "🏆", "📐"])
-        if st.button("追加する", type="primary", use_container_width=True):
+        new_exam_name = st.text_input("検定名", key="add_exam_name")
+        new_exam_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "🔬", "💡", "🎯", "🏆", "📐"], key="add_exam_icon")
+        if st.button("追加する", key="add_exam_submit", type="primary", use_container_width=True):
             if new_exam_name:
                 st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定"}
                 if new_exam_name not in st.session_state.admin_urls:
@@ -218,16 +214,16 @@ with st.sidebar:
     st.divider()
     st.markdown("### ⚙️ 管理者設定")
     with st.expander("デフォルトURLを設定"):
-        all_exams_sidebar = get_all_exams()
-        for exam_name in all_exams_sidebar:
+        current_exams = get_all_exams()
+        for ename in current_exams:
             st.text_input(
-                f"{all_exams_sidebar[exam_name]['icon']} {exam_name}",
-                value=st.session_state.admin_urls.get(exam_name, ""),
-                key=f"input_admin_{exam_name}"
+                f"{current_exams[ename]['icon']} {ename}",
+                value=st.session_state.admin_urls.get(ename, ""),
+                key=f"cfg_{ename}"
             )
-        if st.button("設定を保存", use_container_width=True):
-            for exam_name in all_exams_sidebar:
-                st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
+        if st.button("設定を保存", key="save_admin_cfg", use_container_width=True):
+            for ename in current_exams:
+                st.session_state.admin_urls[ename] = st.session_state[f"cfg_{ename}"]
             save_config_to_aws()
             st.success("AWSに保存しました！")
             st.rerun()
@@ -239,7 +235,6 @@ st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と�
             unsafe_allow_html=True)
 st.divider()
 
-# 最新情報の読み込み
 load_from_aws()
 
 all_exams = get_all_exams()
@@ -256,7 +251,7 @@ for idx, exam_name in enumerate(exam_names):
             if not rooms_list:
                 st.info("現在アクティブなルームはありません。右側から新しいルームを追加してください。")
             else:
-                for room in rooms_list:
+                for r_idx, room in enumerate(rooms_list):
                     st.markdown(f"""
                     <div class="exam-card active">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -266,6 +261,8 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
+                    
+                    # ログの TypeError 回避: link_button に key は不要
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
@@ -273,15 +270,14 @@ for idx, exam_name in enumerate(exam_names):
             st.markdown("#### 🏰 ルームを追加")
             with st.container(border=True):
                 st.write("新しいルームを作成して共有")
-                # 管理者設定のURLをデフォルト値として使用
                 default_url = st.session_state.admin_urls.get(exam_name, "")
                 url_input = st.text_input(
                     "通話ルームURLを入力",
                     value=default_url,
                     placeholder="https://...",
-                    key=f"url_{exam_name}"
+                    key=f"input_url_{exam_name}"
                 )
-                if st.button("✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                if st.button("✅ ルームを公開", key=f"btn_pub_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
                         create_new_room(exam_name, url_input, login_user_name)
                         st.balloons()
