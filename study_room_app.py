@@ -13,20 +13,34 @@ from boto3.dynamodb.conditions import Key
 # ─────────────────────────────────────────────
 # 1. Google 認証設定
 # ─────────────────────────────────────────────
+# 修正点: 必須引数である redirect_uri を追加し、名前を最新仕様に合わせました
 authenticate = Authenticate(
     secret_path='client_secret.json', 
     cookie_name='study_connect_cookie',
     cookie_key='some_signature_key',
     cookie_expiry_days=30,
+    redirect_uri='https://ai-quiz-app-ic48ffkwgqnz3p4ptekmfp.streamlit.app', # 必須引数
 )
 
+# ログインチェック
 authenticate.check_authenticity()
 
+# ログインしていない場合はログイン画面を表示して停止
 if not st.session_state.get('connected'):
-    st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>ログインして学習を始めよう</p></div>""", unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+            .main-header { text-align: center; padding: 2rem 0; }
+            .main-header h1 { font-size: 2.5rem; color: #1a1a2e; }
+        </style>
+        <div class="main-header">
+            <h1>📚 StudyConnect</h1>
+            <p>ログインして学習を始めよう</p>
+        </div>
+    """, unsafe_allow_html=True)
     authenticate.login()
     st.stop()
 
+# ログイン済み：ユーザー情報を取得
 user_info = st.session_state['user_info']
 login_user_name = user_info.get('name', '匿名')
 
@@ -212,7 +226,6 @@ for idx, exam_name in enumerate(exam_names):
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
-                        # ログイン名を使用してルームを作成
                         create_new_room(exam_name, url_input, login_user_name)
                         st.balloons(); st.rerun()
                     else:
