@@ -26,7 +26,7 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
-    html, body, [class*=\"css\"] {
+    html, body, [class*="css"] {
         font-family: 'Noto Sans JP', sans-serif;
     }
 
@@ -233,7 +233,6 @@ with st.sidebar:
         if st.button("追加する", type="primary", use_container_width=True):
             if new_exam_name:
                 st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定", "color": "#a29bfe", "admin_url": ""}
-                # 管理者設定用の辞書にも追加
                 if new_exam_name not in st.session_state.admin_urls:
                     st.session_state.admin_urls[new_exam_name] = ""
                 save_config_to_aws()
@@ -317,25 +316,28 @@ for i in range(0, len(exam_list), cols_per_row):
                 </div>
             </div>""", unsafe_allow_html=True)
 
-            # 常に「ルーム作成・参加」のフォームを表示
+            # エクスパンダー内
             with st.expander(f"📢 {'ルームを管理' if is_active else '今からやる！（ルーム作成）'}"):
-                # 管理者設定があればそれをデフォルトとして表示
                 default_url = st.session_state.admin_urls.get(exam_name, "")
                 
+                # ★修正ポイント：デフォルトURLをエクスパンダーの最上部に固定表示
                 if default_url:
-                    st.markdown(f"<div class='alert-info'>デフォルトURLが設定されています</div>", unsafe_allow_html=True)
-                    st.code(default_url, language=None)
-                    use_admin = st.checkbox("このURLを使う", value=True, key=f"use_admin_{exam_name}")
-                    url_to_use = default_url if use_admin else st.text_input("別のURLを入力", key=f"custom_url_{exam_name}")
+                    st.markdown(f"<div class='alert-info'><b>固定URL:</b> {default_url}</div>", unsafe_allow_html=True)
+                    use_admin = st.checkbox("このURLを使用する", value=True, key=f"use_admin_{exam_name}")
+                    if not use_admin:
+                        url_to_use = st.text_input("別のURLを入力", key=f"custom_url_{exam_name}", placeholder="https://...")
+                    else:
+                        url_to_use = default_url
                 else:
-                    url_to_use = st.text_input("通話ルームURL", placeholder="https://...", key=f"url_input_{exam_name}")
+                    st.markdown("⚠️ デフォルトURLが設定されていません。サイドバーから設定できます。")
+                    url_to_use = st.text_input("通話ルームURLを入力", placeholder="https://...", key=f"url_input_{exam_name}")
 
-                if st.button(f"✅ ルームを反映", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                if st.button(f"✅ 設定を反映して開始", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if not url_to_use or not is_url_valid(url_to_use):
-                        st.error("有効なURLを入力してください")
+                        st.error("有効なURLを入力してください（http:// または https:// で始まるもの）")
                     else:
                         create_or_join_room(exam_name, url_to_use, st.session_state.my_name)
                         st.balloons(); st.rerun()
 
 st.divider()
-st.markdown("""<div style=\"text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;\">📚 StudyConnect ─ 一緒に学べば、もっと頑張れる</div>""", unsafe_allow_html=True)
+st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ 一緒に学べば、もっと頑張れる</div>""", unsafe_allow_html=True)
