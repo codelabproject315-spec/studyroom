@@ -260,9 +260,16 @@ st.markdown("""
         padding: 0.85rem 1.1rem;
         margin-bottom: 0.5rem;
     }
-    .user-row-name { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; }
-    .user-row-email { font-size: 0.78rem; color: #666; margin-left: 0.4rem; }
-    .user-row-date { font-size: 0.72rem; color: #999; margin-top: 0.25rem; }
+    .user-row-card {
+        display: grid;
+        grid-template-columns: 140px 1fr auto;
+        align-items: center;
+        gap: 0 1.5rem;
+    }
+    .user-row-name { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .user-row-email { font-size: 0.88rem; color: #444; font-weight: 500; }
+    .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
+    .user-row-date { font-size: 0.82rem; color: #888; font-weight: 500; white-space: nowrap; }
     .user-row-admin {
         display: inline-block;
         background: linear-gradient(135deg, #f59e0b, #ef4444);
@@ -580,8 +587,10 @@ def show_user_management_panel():
                         '<div class="user-row-card">'
                         f'<span class="user-row-name">{name}</span>'
                         f'<span class="user-row-email">{email}</span>'
+                        '<span class="user-row-meta">'
                         + admin_tag +
-                        f'<div class="user-row-date">登録: {date}</div>'
+                        f'<span class="user-row-date">登録: {date}</span>'
+                        '</span>'
                         '</div>'
                     )
                     st.markdown(html, unsafe_allow_html=True)
