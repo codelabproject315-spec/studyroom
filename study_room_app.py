@@ -179,6 +179,45 @@ st.markdown("""
         margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
     }
 
+    /* ── ユーザー管理：ユーザー行カード ── */
+    .user-row-card {
+        background: #f0eef8;
+        border: 1px solid #ddd8f0;
+        border-radius: 12px;
+        padding: 0.9rem 1.1rem;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .user-row-name {
+        font-size: 0.95rem; font-weight: 700; color: #1a1a2e;
+    }
+    .user-row-email {
+        font-size: 0.78rem; color: #666; margin-left: 0.4rem;
+    }
+    .user-row-date {
+        font-size: 0.72rem; color: #999; margin-top: 0.2rem;
+    }
+    .user-row-admin {
+        display: inline-block;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white; border-radius: 20px;
+        padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
+        margin-left: 0.4rem; vertical-align: middle;
+    }
+
+    /* expander の背景を統一 */
+    [data-testid="stExpander"] {
+        background: #fff !important;
+        border: 1.5px solid #eae7f5 !important;
+        border-radius: 14px !important;
+    }
+    [data-testid="stExpander"] > div:first-child {
+        border-radius: 14px !important;
+    }
+
     /* ── ログイン ── */
     .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #1a1a2e; margin-bottom: 0.3rem; }
     .login-subtitle { text-align: center; color: #888; font-size: 0.9rem; }
@@ -212,6 +251,33 @@ st.markdown("""
         transition: opacity 0.2s !important;
     }
     .stButton > button[kind="primary"]:hover { opacity: 0.82 !important; }
+
+    /* ── ユーザー管理：ユーザー行カード ── */
+    .user-row-card {
+        background: #f5f3fc;
+        border: 1px solid #ddd8f0;
+        border-radius: 12px;
+        padding: 0.85rem 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    .user-row-name { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; }
+    .user-row-email { font-size: 0.78rem; color: #666; margin-left: 0.4rem; }
+    .user-row-date { font-size: 0.72rem; color: #999; margin-top: 0.25rem; }
+    .user-row-admin {
+        display: inline-block;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white; border-radius: 20px;
+        padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
+        margin-left: 0.5rem; vertical-align: middle;
+    }
+
+    /* expander を白カードに */
+    [data-testid="stExpander"] {
+        background: #fff !important;
+        border: 1.5px solid #eae7f5 !important;
+        border-radius: 14px !important;
+        overflow: hidden;
+    }
 
     footer { visibility: hidden; }
 </style>
@@ -463,21 +529,29 @@ def show_user_management_panel():
     st.markdown("### 👥 ユーザー管理")
     with st.expander("📋 ユーザー一覧", expanded=True):
         users = db_list_users()
-        if not users: st.info("登録ユーザーがいません")
+        if not users:
+            st.info("登録ユーザーがいません")
         else:
             for u in sorted(users, key=lambda x: x['created_at']):
-                col_info, col_del = st.columns([4, 1])
+                is_self = u['email'] == st.session_state.current_user['email']
+                admin_tag = '<span class="user-row-admin">👑 管理者</span>' if u['is_admin'] else ""
+                col_info, col_del = st.columns([5, 1])
                 with col_info:
-                    st.markdown(
-                        f"**{u['display_name']}** `{u['email']}`{'　🔴 管理者' if u['is_admin'] else ''}  \n"
-                        f"<span style='color:#aaa;font-size:0.8rem;'>登録: {u['created_at'][:10]}</span>",
-                        unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div class="user-row-card">
+                        <div>
+                            <span class="user-row-name">{u['display_name']}</span>
+                            <span class="user-row-email">{u['email']}</span>
+                            {admin_tag}
+                            <div class="user-row-date">登録: {u['created_at'][:10]}</div>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
                 with col_del:
-                    is_self = u['email'] == st.session_state.current_user['email']
-                    if st.button("削除", key=f"del_{u['email']}", disabled=is_self):
+                    st.markdown("<div style='margin-top:0.5rem'></div>", unsafe_allow_html=True)
+                    if st.button("🗑️", key=f"del_{u['email']}", disabled=is_self,
+                                 help="自分自身は削除できません" if is_self else "このユーザーを削除"):
                         if db_delete_user(u['email']): st.success(f"{u['display_name']} を削除しました"); st.rerun()
                         else: st.error("削除に失敗しました")
-                st.divider()
 
     with st.expander("🔑 パスワードをリセット"):
         users_list = db_list_users()
