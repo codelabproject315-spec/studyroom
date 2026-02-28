@@ -313,13 +313,12 @@ st.markdown("""
         background: rgba(102,126,234,0.55) !important;
     }
 
-    /* ── メイン右カラム（ルーム追加パネル）── */
-    .add-panel-wrap {
-        background: #fff;
-        border: 1px solid #e2e4ea;
-        border-radius: 16px;
-        padding: 1.4rem 1.5rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    /* ── メインコンテナ（border=True）を白カードに統一 ── */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: #ffffff !important;
+        border: 1px solid #e2e4ea !important;
+        border-radius: 14px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04) !important;
     }
 
     footer { visibility: hidden; }
@@ -833,18 +832,17 @@ for idx, exam_name in enumerate(exam_names):
                     st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
 
         with col_right:
-            st.markdown('<div class="add-panel-wrap">', unsafe_allow_html=True)
-            st.markdown('<div class="add-room-title">🏰 ルームを追加</div>', unsafe_allow_html=True)
-            st.markdown('<div class="add-room-sub">通話URLを貼り付けて公開しよう</div>', unsafe_allow_html=True)
-            url_input = st.text_input("URL", value="", placeholder="https://zoom.us/j/...",
-                                      key=f"url_{exam_name}", label_visibility="collapsed")
-            if st.button("✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
-                if is_url_valid(url_input):
-                    create_new_room(exam_name, url_input, st.session_state.my_name)
-                    st.balloons(); st.rerun()
-                else:
-                    st.error("有効なURLを入力してください（http / https）")
-            st.markdown('</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown('<div class="add-room-title">🏰 ルームを追加</div>', unsafe_allow_html=True)
+                st.markdown('<div class="add-room-sub">通話URLを貼り付けて公開しよう</div>', unsafe_allow_html=True)
+                url_input = st.text_input("URL", value="", placeholder="https://zoom.us/j/...",
+                                          key=f"url_{exam_name}", label_visibility="collapsed")
+                if st.button("✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                    if is_url_valid(url_input):
+                        create_new_room(exam_name, url_input, st.session_state.my_name)
+                        st.balloons(); st.rerun()
+                    else:
+                        st.error("有効なURLを入力してください（http / https）")
 
 if admin_tab:
     with admin_tab:
