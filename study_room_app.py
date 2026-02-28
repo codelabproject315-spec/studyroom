@@ -614,12 +614,11 @@ current_user = st.session_state.current_user
 is_admin = current_user.get('is_admin', False)
 
 with st.sidebar:
-    admin_badge = '<span class="admin-badge">管理者</span>' if is_admin else ''
     st.markdown(f"""
-    <div style="text-align:center; padding:0.5rem 0 0.3rem 0;">
-        <span class="user-badge">👤 {current_user['display_name']}</span>{admin_badge}
+    <div style="text-align:center; padding:0.5rem 0 0.1rem 0;">
+        <span class="user-badge">👤 {current_user['display_name']}</span>
     </div>
-    <div style="text-align:center; color:#aaa; font-size:0.75rem; padding-bottom:0.5rem;">
+    <div style="text-align:center; color:#aaa; font-size:0.75rem; padding:0.3rem 0 0.5rem 0;">
         {current_user['email']}
     </div>
     """, unsafe_allow_html=True)
