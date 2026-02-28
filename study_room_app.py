@@ -40,10 +40,6 @@ st.markdown("""
         color: #1a1a2e;
         margin-bottom: 0.3rem;
     }
-    .main-header p {
-        color: #666;
-        font-size: 1.05rem;
-    }
 
     .exam-card {
         background: white;
@@ -54,11 +50,6 @@ st.markdown("""
         border: 2px solid transparent;
         transition: all 0.2s ease;
     }
-    .exam-card:hover {
-        border-color: #6c63ff;
-        box-shadow: 0 4px 20px rgba(108,99,255,0.15);
-        transform: translateY(-2px);
-    }
     .exam-card.active {
         border-color: #00b894;
         background: linear-gradient(135deg, #f0fff8 0%, #ffffff 100%);
@@ -67,16 +58,10 @@ st.markdown("""
     .room-url-box {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1.2rem;
         color: white;
         margin: 1rem 0;
         text-align: center;
-    }
-    .room-url-box a {
-        color: #ffeaa7;
-        font-weight: 700;
-        font-size: 1.1rem;
-        word-break: break-all;
     }
 
     .participants-badge {
@@ -90,15 +75,6 @@ st.markdown("""
     }
     .participants-badge.empty {
         background: #b2bec3;
-    }
-
-    .alert-info {
-        background: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        margin: 0.5rem 0;
     }
 
     footer { visibility: hidden; }
@@ -156,9 +132,9 @@ def save_config_to_aws():
 # データ初期化
 # ─────────────────────────────────────────────
 EXAMS_DEFAULT = {
-    "G検定": {"icon": "🤖", "description": "AIの基礎知識・理論", "color": "#6c63ff"},
-    "E資格": {"icon": "⚡", "description": "ディープラーニング実装", "color": "#e17055"},
-    "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用", "color": "#fd9644"},
+    "G検定": {"icon": "🤖", "description": "AIの基礎知識・理論"},
+    "E資格": {"icon": "⚡", "description": "ディープラーニング実装"},
+    "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用"},
 }
 
 def init_state():
@@ -217,7 +193,7 @@ def is_url_valid(url):
 # ─────────────────────────────────────────────
 init_state()
 
-st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と繋がる学習ルーム共有</p></div>""", unsafe_allow_html=True)
+st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>カテゴリー別・学習ルーム共有</p></div>""", unsafe_allow_html=True)
 st.divider()
 
 with st.sidebar:
@@ -232,7 +208,7 @@ with st.sidebar:
         new_exam_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "🔬", "💡", "🎯", "🏆", "📐"])
         if st.button("追加する", type="primary", use_container_width=True):
             if new_exam_name:
-                st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定", "color": "#a29bfe"}
+                st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定"}
                 if new_exam_name not in st.session_state.admin_urls:
                     st.session_state.admin_urls[new_exam_name] = ""
                 save_config_to_aws(); st.rerun()
@@ -257,76 +233,63 @@ with st.sidebar:
         time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# コンテンツ表示
+# コンテンツ表示（カテゴリー別タブ形式）
 # ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
 
-# ★ 修正ポイント：常に最上部に表示される「常設ルーム」
-st.markdown("### 🟢 常設ルーム（今すぐ参加）")
-for exam_name, exam in all_exams.items():
-    default_url = st.session_state.admin_urls.get(exam_name, "")
-    if not default_url: continue 
+# ★ 修正ポイント：検定カテゴリーごとにタブを作成
+exam_names = list(all_exams.keys())
+tabs = st.tabs([f"{all_exams[name]['icon']} {name}" for name in exam_names])
 
-    # DBから参加状況を取得（なければ空）
-    room = st.session_state.rooms.get(exam_name)
-    participant_count = len(room["participants"]) if room else 0
-    is_joined = exam_name in st.session_state.my_rooms
-
-    with st.container():
-        st.markdown(f"""
-        <div class="exam-card active">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
-                <div><span style="font-size:1.5rem;">{exam['icon']}</span><strong style="font-size:1.1rem; margin-left:0.5rem;">{exam_name}</strong></div>
-                <span class="participants-badge">👥 {participant_count}人が学習中</span>
-            </div>
-            <div class="room-url-box"><p style="margin-bottom:0.5rem; opacity:0.9; font-size:0.9rem;">🔗 通話ルームURL</p><a href="{default_url}" target="_blank">{default_url}</a></div>
-        </div>""", unsafe_allow_html=True)
-        cols = st.columns([3, 1])
-        with cols[0]:
-            if room and room["participants"]:
-                st.caption(f"👋 参加中: {', '.join(room['participants'][:5])}")
-            st.caption(f"📌 固定URL設定済み")
-        with cols[1]:
-            # ここで「参加する」ボタンが常に出るように修正
-            if is_joined:
-                if st.button("退出する", key=f"top_leave_{exam_name}", type="secondary", use_container_width=True):
-                    leave_room(exam_name, st.session_state.my_name); st.rerun()
-            else:
-                if st.link_button("参加する🚀", default_url, type="primary", use_container_width=True):
-                    # 裏でDBの参加人数を更新
-                    create_or_join_room(exam_name, default_url, st.session_state.my_name)
-
-st.divider()
-
-# 検定一覧エリア（管理用）
-st.markdown("### 📋 検定一覧 ─ ルームの作成・個別設定")
-exam_list = list(all_exams.items())
-for i in range(0, len(exam_list), 2):
-    cols = st.columns(2)
-    for col, (exam_name, exam) in zip(cols, exam_list[i:i+2]):
-        with col:
-            room_data = st.session_state.rooms.get(exam_name)
-            is_active = room_data is not None
+for idx, exam_name in enumerate(exam_names):
+    with tabs[idx]:
+        exam = all_exams[exam_name]
+        default_url = st.session_state.admin_urls.get(exam_name, "")
+        room = st.session_state.rooms.get(exam_name)
+        participant_count = len(room["participants"]) if room else 0
+        
+        col_main, col_sub = st.columns([2, 1])
+        
+        with col_main:
+            st.markdown(f"### {exam['icon']} {exam_name} 自習室")
+            st.caption(exam['description'])
+            
+            # 常設ルームカード
             st.markdown(f"""
-            <div class="exam-card">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
-                    <div><span style="font-size:1.8rem;">{exam['icon']}</span><strong style="display:block; font-size:1.1rem; color:#1a1a2e; margin-top:0.2rem;">{exam_name}</strong><small style="color:#888;">{exam['description']}</small></div>
-                    <span class="participants-badge {'empty' if not is_active else ''}">👥 {len(room_data['participants']) if is_active else 0}人</span>
+            <div class="exam-card active">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="font-size:1.2rem;">🟢 固定ルーム</strong>
+                    <span class="participants-badge">👥 {participant_count}人が学習中</span>
+                </div>
+                <div class="room-url-box">
+                    <small>URL: {default_url if default_url else '未設定'}</small>
                 </div>
             </div>""", unsafe_allow_html=True)
+            
+            if not default_url:
+                st.warning("管理者設定でURLが登録されていません。")
+            else:
+                c1, c2 = st.columns(2)
+                with c1:
+                    if st.link_button("Zoom/通話に参加🚀", default_url, type="primary", use_container_width=True):
+                        create_or_join_room(exam_name, default_url, st.session_state.my_name)
+                with c2:
+                    if exam_name in st.session_state.my_rooms:
+                        if st.button("退出する", key=f"leave_{exam_name}", type="secondary", use_container_width=True):
+                            leave_room(exam_name, st.session_state.my_name); st.rerun()
 
-            with st.expander(f"📢 別のURLでルームを作成"):
-                default_url = st.session_state.admin_urls.get(exam_name, "")
-                if default_url:
-                    st.markdown(f"<div class='alert-info'><b>現在の固定URL:</b> {default_url}</div>", unsafe_allow_html=True)
-                
-                url_to_use = st.text_input("通話ルームURLを入力", placeholder="https://...", key=f"url_input_{exam_name}")
-                if st.button(f"✅ 反映して開始", key=f"create_{exam_name}", type="primary", use_container_width=True):
+        with col_sub:
+            st.markdown("#### 📢 カスタム設定")
+            with st.expander("別のURLで作成"):
+                url_to_use = st.text_input("一時的な通話URL", placeholder="https://...", key=f"custom_url_{exam_name}")
+                if st.button("反映して開始", key=f"btn_{exam_name}", use_container_width=True):
                     if is_url_valid(url_to_use):
-                        create_or_join_room(exam_name, url_to_use, st.session_state.my_name); st.balloons(); st.rerun()
-                    else:
-                        st.error("有効なURLを入力してください")
+                        create_or_join_room(exam_name, url_to_use, st.session_state.my_name); st.rerun()
+
+        if room and room["participants"]:
+            st.divider()
+            st.markdown(f"👋 **現在参加中のメンバー:** {', '.join(room['participants'])}")
 
 st.divider()
-st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ データはAWS DynamoDBに永続化されています</div>""", unsafe_allow_html=True)
+st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ カテゴリーを切り替えて仲間を探そう</div>""", unsafe_allow_html=True)
