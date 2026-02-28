@@ -31,7 +31,7 @@ st.markdown("""
     html, body, [class*="css"] {
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
     }
-    .stApp { background: #f5f4f0; }
+    .stApp { background: #f0f2f6; }
 
     /* ── サイドバー全体 ── */
     [data-testid="stSidebar"] {
@@ -123,7 +123,7 @@ st.markdown("""
 
     /* ── メインヘッダー ── */
     .main-header {
-        background: #1a1a2e; border-radius: 20px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px;
         padding: 2.2rem 2rem; margin-bottom: 1.5rem;
         text-align: center; position: relative; overflow: hidden;
     }
@@ -145,7 +145,7 @@ st.markdown("""
     /* ── ルームカード ── */
     .room-card {
         background: #fff; border-radius: 16px; padding: 1.4rem 1.6rem;
-        margin-bottom: 1rem; border: 1.5px solid #eae7f5;
+        margin-bottom: 1rem; border: 1px solid #e2e4ea;
         box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     }
     .room-card-host {
@@ -182,7 +182,7 @@ st.markdown("""
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
         background: #f0eef8;
-        border: 1px solid #ddd8f0;
+        border: 1px solid #e2e4ea;
         border-radius: 12px;
         padding: 0.9rem 1.1rem;
         margin-bottom: 0.6rem;
@@ -234,7 +234,7 @@ st.markdown("""
 
     /* ── タブ ── */
     .stTabs [data-baseweb="tab-list"] {
-        background: #eae7f5; border-radius: 12px; padding: 4px; gap: 2px;
+        background: #e8eaed; border-radius: 12px; padding: 4px; gap: 2px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 9px !important; font-weight: 600 !important;
@@ -254,8 +254,8 @@ st.markdown("""
 
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
-        background: #f5f3fc;
-        border: 1px solid #ddd8f0;
+        background: #ffffff;
+        border: 1px solid #e2e4ea;
         border-radius: 12px;
         padding: 0.85rem 1.1rem;
         margin-bottom: 0.5rem;
@@ -281,7 +281,7 @@ st.markdown("""
     /* ── expander 共通 ── */
     [data-testid="stExpander"] {
         background: #fff !important;
-        border: 1.5px solid #ddd8f0 !important;
+        border: 1px solid #e2e4ea !important;
         border-radius: 14px !important;
         overflow: hidden;
     }
@@ -316,7 +316,7 @@ st.markdown("""
     /* ── メイン右カラム（ルーム追加パネル）── */
     .add-panel-wrap {
         background: #fff;
-        border: 1.5px solid #eae7f5;
+        border: 1px solid #e2e4ea;
         border-radius: 16px;
         padding: 1.4rem 1.5rem;
         box-shadow: 0 2px 12px rgba(0,0,0,0.04);
