@@ -275,25 +275,27 @@ with st.sidebar:
 
     st.divider()
 
-    # 管理者設定
+# 管理者設定
     st.markdown("### ⚙️ 管理者設定")
     with st.expander("デフォルトURLを設定（管理者用）"):
         all_exams = get_all_exams()
+        # 1. 入力フィールドを表示（keyを個別に割り当てて値を保持させる）
         for exam_name in all_exams:
-            # keyを個別の一時キー(input_admin_...)に設定
             st.text_input(
                 f"{all_exams[exam_name]['icon']} {exam_name}",
                 value=st.session_state.admin_urls.get(exam_name, ""),
                 placeholder="https://discord.gg/xxxxx",
-                key=f"input_admin_{exam_name}" 
+                key=f"input_admin_{exam_name}"  # 入力値保持用の一時キー
             )
         
-        # 保存ボタンが押された時に、一時キーから辞書へ値を移し替える
+        # 2. 保存ボタンが押された時に、一時キーの値を辞書へ一括コピーする
         if st.button("設定を保存", use_container_width=True):
             for exam_name in all_exams:
+                # session_state[一時キー] から辞書へ代入
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
-            st.success("保存しました！")
-            st.rerun() # 画面を更新してメインエリアに反映
+            
+            st.success("設定を保存しました！")
+            st.rerun()  # 画面を強制更新して、メインエリアのURL表示を最新にする
     st.divider()
 
     # 自動リフレッシュ
