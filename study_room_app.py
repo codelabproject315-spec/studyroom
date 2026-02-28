@@ -650,20 +650,21 @@ with st.sidebar:
                 save_config_to_aws()
                 st.rerun()
 
-    st.divider()
-    st.markdown("### ⚙️ 設定")
-    with st.expander("デフォルトURLを設定"):
-        all_exams_sb = get_all_exams()
-        for ename in all_exams_sb:
-            st.text_input(f"{all_exams_sb[ename]['icon']} {ename}",
-                          value=st.session_state.admin_urls.get(ename, ""),
-                          key=f"input_admin_{ename}")
-        if st.button("設定を保存", use_container_width=True):
+    if is_admin:
+        st.divider()
+        st.markdown("### ⚙️ 設定")
+        with st.expander("デフォルトURLを設定"):
+            all_exams_sb = get_all_exams()
             for ename in all_exams_sb:
-                st.session_state.admin_urls[ename] = st.session_state[f"input_admin_{ename}"]
-            save_config_to_aws()
-            st.success("AWSに保存しました！")
-            st.rerun()
+                st.text_input(f"{all_exams_sb[ename]['icon']} {ename}",
+                              value=st.session_state.admin_urls.get(ename, ""),
+                              key=f"input_admin_{ename}")
+            if st.button("設定を保存", use_container_width=True):
+                for ename in all_exams_sb:
+                    st.session_state.admin_urls[ename] = st.session_state[f"input_admin_{ename}"]
+                save_config_to_aws()
+                st.success("AWSに保存しました！")
+                st.rerun()
 
     st.divider()
     auto_refresh = st.toggle("🔄 自動更新（30秒）", value=False)
