@@ -280,21 +280,20 @@ with st.sidebar:
     with st.expander("デフォルトURLを設定（管理者用）"):
         all_exams = get_all_exams()
         for exam_name in all_exams:
-            # keyを個別に設定し、現在の辞書値を初期値にする
+            # keyを個別の一時キー(input_admin_...)に設定
             st.text_input(
                 f"{all_exams[exam_name]['icon']} {exam_name}",
                 value=st.session_state.admin_urls.get(exam_name, ""),
                 placeholder="https://discord.gg/xxxxx",
-                key=f"input_admin_{exam_name}" # 入力用の一時キー
+                key=f"input_admin_{exam_name}" 
             )
         
+        # 保存ボタンが押された時に、一時キーから辞書へ値を移し替える
         if st.button("設定を保存", use_container_width=True):
-            # ボタンが押された時に、各入力欄から辞書へ値を移す
             for exam_name in all_exams:
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
             st.success("保存しました！")
-            st.rerun() # 反映を確実にするため再描画
-
+            st.rerun() # 画面を更新してメインエリアに反映
     st.divider()
 
     # 自動リフレッシュ
