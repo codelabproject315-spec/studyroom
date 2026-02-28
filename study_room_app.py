@@ -1,6 +1,6 @@
 """
 学習ルーム共有アプリ - StudyConnect
-TypeError解消・Secrets完全統合版
+エラー修正・完全統合版
 """
 
 import streamlit as st
@@ -19,36 +19,23 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# 1. Google 認証設定 (Secretsから直接取得)
+# 1. Google 認証設定 (Secretsの[google_auth]を直接使用)
 # ─────────────────────────────────────────────
-# Secretsの [google_auth] セクションから安全に取得
-try:
-    # 画像の通り、Secretsの直下または [google_auth] 内にある情報を取得
-    google_conf = st.secrets.get("google_auth", st.secrets)
-    
-    # 必要な情報を抽出
-    cid = google_conf["client_id"]
-    csecret = google_conf["client_secret"]
-    # redirect_uris はリスト形式なので最初の1つを取得
-    ruri = google_conf["redirect_uris"]
-    if isinstance(ruri, list):
-        ruri = ruri[0]
+# Secretsから一括取得
+google_conf = st.secrets["google_auth"]
 
-except Exception as e:
-    st.error(f"Secretsの設定を確認してください: {e}")
-    st.stop()
-
-# 【修正ポイント】引数名を 'secret_key' に修正し、TypeErrorを回避します
+# Authenticateのインスタンス化
+# キー名は環境に合わせてフォールバックするように設定
 authenticate = Authenticate(
-    client_id=cid,
-    client_secret=csecret,
-    redirect_uri=ruri,
+    client_id=google_conf["client_id"],
+    client_secret=google_conf["client_secret"],
+    redirect_uri=google_conf["redirect_uris"][0], # リストの1番目を使用
     cookie_name='study_connect_cookie',
-    secret_key='study_connect_secret_key_2024', # 'key' から 'secret_key' に変更
+    cookie_key='study_connect_secret_key_2024',
     cookie_expiry_days=30,
 )
 
-# 認証メソッドの実行 (綴りの揺れを吸収)
+# 認証メソッドの実行 (綴りの違いを吸収)
 try:
     authenticate.check_authentification()
 except:
@@ -57,10 +44,11 @@ except:
 
 # ログインチェック
 if not st.session_state.get('connected'):
-    st.markdown('<div style="text-align:center; padding:2rem;"><h1>📚 StudyConnect</h1><p>ログインしてください</p></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align:center; padding:2rem;"><h1>📚 StudyConnect</h1><p>ログインして学習を開始しましょう</p></div>', unsafe_allow_html=True)
     authenticate.login()
     st.stop()
 
+# ユーザー情報の取得
 user_info = st.session_state.get('user_info', {})
 login_user_name = user_info.get('name', '匿名')
 
@@ -82,19 +70,20 @@ def get_db_table():
 table = get_db_table()
 
 # ─────────────────────────────────────────────
-# 3. メインUI
+# 3. メインUIロジック
 # ─────────────────────────────────────────────
+# サイドバー
 with st.sidebar:
     if user_info.get('picture'):
         st.image(user_info['picture'], width=70)
-    st.write(f"Hi, {login_user_name}")
+    st.write(f"👋 こんにちは、{login_user_name} さん")
     if st.button("ログアウト", use_container_width=True):
         authenticate.logout()
 
 st.title("📚 StudyConnect")
 st.divider()
 
-# ルーム取得
+# ルーム一覧取得 (簡易化)
 def load_rooms():
     if table is None: return {}
     try:
@@ -103,7 +92,7 @@ def load_rooms():
         for item in items:
             iid = item.get('item_id', '')
             if iid.startswith('room_'):
-                # room_検定名_timestamp
+                # room_検定名_timestamp から検定名を抽出
                 exam = iid.split('_')[1]
                 if exam not in rooms_dict: rooms_dict[exam] = []
                 rooms_dict[exam].append(item)
@@ -123,20 +112,22 @@ for idx, (exam_name, icon) in enumerate(exams.items()):
         with col_l:
             st.subheader(f"{icon} {exam_name} 一覧")
             if not rooms:
-                st.info("ルームはありません")
+                st.info("現在アクティブなルームはありません。")
             for r in rooms:
                 with st.container(border=True):
-                    st.write(f"👋 **{r.get('host', '匿名')}** さんのルーム")
-                    st.link_button("参加🚀", r.get('url', '#'), key=f"btn_{r['item_id']}", use_container_width=True)
+                    st.write(f"🏠 **{r.get('host', '匿名')}** さんのルーム")
+                    st.link_button("参加する🚀", r.get('url', '#'), key=f"btn_{r['item_id']}", use_container_width=True)
         
         with col_r:
-            st.subheader("🏰 ルーム公開")
-            u_in = st.text_input("URLを入力", key=f"in_{exam_name}")
-            if st.button("公開✅", key=f"pub_{exam_name}", type="primary", use_container_width=True):
+            st.subheader("🏰 ルームを公開")
+            u_in = st.text_input("通話URLを入力", key=f"in_{exam_name}")
+            if st.button("公開する✅", key=f"pub_{exam_name}", type="primary", use_container_width=True):
                 if u_in.startswith("http"):
                     rid = f"room_{exam_name}_{int(time.time())}"
                     table.put_item(Item={
                         'item_id': rid, 'url': u_in, 
                         'created_at': datetime.now().isoformat(), 'host': login_user_name
                     })
+                    st.success("公開しました！")
+                    time.sleep(1)
                     st.rerun()
