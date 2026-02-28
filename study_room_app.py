@@ -289,10 +289,12 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            if st.link_button("参加する🚀", room['url'], type="primary", use_container_width=True):
+                            # 参加ボタンにもルーム固有のキーを設定
+                            if st.link_button("参加する🚀", room['url'], key=f"join_btn_{room['id']}", type="primary", use_container_width=True):
                                 join_existing_room(room['id'], st.session_state.my_name)
                         else:
-                            st.button("参加中 ✅", disabled=True, use_container_width=True)
+                            # ★修正箇所: keyを追加して重複エラーを回避
+                            st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
                     with c2:
                         if is_joined:
                             if st.button("退出する", key=f"leave_{room['id']}", type="secondary", use_container_width=True):
@@ -305,7 +307,6 @@ for idx, exam_name in enumerate(exam_names):
             with st.container(border=True):
                 st.write("新しいルームを作成して共有")
                 
-                # ★ 変更箇所: valueを空文字 "" に設定
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
                 
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
