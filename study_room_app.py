@@ -13,7 +13,7 @@ from boto3.dynamodb.conditions import Key
 # ─────────────────────────────────────────────
 # 1. Google 認証設定 (Secretsの[google_auth]を使用)
 # ─────────────────────────────────────────────
-# TypeError回避のため、引数名を 'secret_key' に修正しました
+# 引数名をライブラリの期待する 'key' (または環境により 'secret_key') に合わせます
 google_conf = st.secrets["google_auth"]
 
 authenticate = Authenticate(
@@ -21,7 +21,7 @@ authenticate = Authenticate(
     client_secret=google_conf['client_secret'],
     redirect_uri=google_conf['redirect_uris'][0],
     cookie_name='study_connect_cookie',
-    secret_key='some_signature_key',  # 'key' から 'secret_key' に変更
+    key='some_signature_key',  # ここでエラーが出る場合は 'secret_key' に変更
     cookie_expiry_days=30
 )
 
@@ -142,7 +142,6 @@ def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
 def create_new_room(exam_name, url, host_name):
-    """ルーム作成時にログインユーザー名を使用"""
     room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         table.put_item(Item={
@@ -220,7 +219,6 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
-                    # key引数を削除してTypeErrorを回避
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
