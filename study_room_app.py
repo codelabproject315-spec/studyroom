@@ -335,6 +335,14 @@ with st.sidebar:
 # ─────────────────────────────────────────────
 # メインコンテンツ
 # ─────────────────────────────────────────────
+load_from_aws() 
+
+all_exams = get_all_exams()
+
+# アクティブなルームがあれば上部に表示
+active_rooms = [(name, st.session_state.rooms[name]) for name in all_exams if name in st.session_state.rooms]
+# --- 以下、既存の表示処理 ---
+
 all_exams = get_all_exams()
 active_rooms = [(name, st.session_state.rooms[name]) for name in all_exams if name in st.session_state.rooms]
 
