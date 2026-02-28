@@ -338,7 +338,7 @@ def show_auth_page():
                 with st.container(border=True):
                     st.markdown('<span class="step-badge">STEP 1 / 3　メール確認</span>', unsafe_allow_html=True)
                     st.markdown("#### メールアドレスを入力")
-                    reg_email = st.text_input("メールアドレス", placeholder="you@example.com", key="reg_email")
+                    reg_email = st.text_input("メールアドレス", placeholder="you@example.com", key="reg_email_input")
 
                     if st.button("確認コードを送信", type="primary", use_container_width=True, key="reg_send"):
                         e = norm_email(reg_email)
