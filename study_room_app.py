@@ -27,7 +27,7 @@ st.set_page_config(
 # Secretsから取得
 google_conf = st.secrets["google_auth"]
 
-# 最新版の streamlit-google-auth は JSONファイルを介すのが最も安定します
+# 最新版の streamlit-google-auth は JSONファイルを一時的に介すのが最も安定します
 CREDENTIALS_PATH = "/tmp/google_credentials.json"
 credentials_dict = {
     "web": {
@@ -43,6 +43,7 @@ with open(CREDENTIALS_PATH, "w") as f:
     json.dump(credentials_dict, f)
 
 # インスタンス化 (引数名を最新版の 'secret_credentials_path' に修正)
+# ログに出ていた secret_path や client_id を直接渡す方法は現在の仕様ではエラーになります
 authenticate = Authenticate(
     secret_credentials_path=CREDENTIALS_PATH,
     cookie_name='study_connect_cookie',
@@ -51,8 +52,8 @@ authenticate = Authenticate(
     cookie_expiry_days=30,
 )
 
-# 【重要】ライブラリのメソッド名は「check_authentification」です
-# (最後のログで出ていた check_authenticity ではありません)
+# 【重要】ライブラリの正しいメソッド名は「check_authentification」です
+# ログに出ていた check_authenticity ではありません
 authenticate.check_authentification()
 
 # ログインしていない場合はログイン画面を表示して停止
@@ -262,7 +263,7 @@ for idx, exam_name in enumerate(exam_names):
                         </div>
                     </div>""", unsafe_allow_html=True)
                     
-                    # ログの TypeError 回避: link_button に key は不要
+                    # ログの TypeError 回避: st.link_button に key は不要
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
