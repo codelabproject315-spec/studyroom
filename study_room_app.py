@@ -257,6 +257,10 @@ st.markdown("""
     }
 
     footer { visibility: hidden; }
+
+    /* ── サイドバー折りたたみボタンを非表示 ── */
+    [data-testid="collapsedControl"] { display: none !important; }
+    button[kind="headerNoPadding"]   { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
