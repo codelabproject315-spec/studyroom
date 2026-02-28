@@ -1,45 +1,37 @@
 """
 学習ルーム共有アプリ - StudyConnect
-仲間と繋がる学習ルーム共有
+Google認証統合版
 """
 
 import streamlit as st
 from streamlit_google_auth import Authenticate
-
-# 1. 認証の設定
-# 実際には st.secrets から取得するように書き換えてください
-authenticate = Authenticate(
-    secret_path='client_secret.json', # GoogleからダウンロードしたJSON
-    cookie_name='study_connect_cookie',
-    cookie_key='some_signature_key',
-    cookie_expiry_days=30,
-)
-
-# 2. ログインチェック
-authenticate.check_authenticity()
-
-# ログインしていない場合
-if not st.session_state.get('connected'):
-    st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>ログインして学習を始めよう</p></div>""", unsafe_allow_html=True)
-    authenticate.login()
-    st.stop()
-
-# ログイン済みの場合の処理
-user_info = st.session_state['user_info']
-st.sidebar.success(f"ログイン中: {user_info['name']} さん")
-if st.sidebar.button("ログアウト"):
-    authenticate.logout()
-
-# --- これ以降に既存のアプリコードを配置 ---
-
-import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import boto3
 from boto3.dynamodb.conditions import Key
 
 # ─────────────────────────────────────────────
-# ページ設定
+# 1. Google 認証設定
+# ─────────────────────────────────────────────
+authenticate = Authenticate(
+    secret_path='client_secret.json', 
+    cookie_name='study_connect_cookie',
+    cookie_key='some_signature_key',
+    cookie_expiry_days=30,
+)
+
+authenticate.check_authenticity()
+
+if not st.session_state.get('connected'):
+    st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>ログインして学習を始めよう</p></div>""", unsafe_allow_html=True)
+    authenticate.login()
+    st.stop()
+
+user_info = st.session_state['user_info']
+login_user_name = user_info.get('name', '匿名')
+
+# ─────────────────────────────────────────────
+# 2. ページ設定・CSS
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="StudyConnect - 一緒に勉強しよう",
@@ -48,62 +40,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ─────────────────────────────────────────────
-# カスタムCSS
-# ─────────────────────────────────────────────
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'Noto Sans JP', sans-serif;
-    }
-
-    .main-header {
-        text-align: center;
-        padding: 2rem 0 1rem 0;
-    }
-    .main-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-bottom: 0.3rem;
-    }
-
-    .exam-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-        border: 2px solid transparent;
-        transition: all 0.2s ease;
-    }
-    .exam-card.active {
-        border-color: #00b894;
-        background: linear-gradient(135deg, #f0fff8 0%, #ffffff 100%);
-    }
-
-    .room-url-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        color: white;
-        margin: 1rem 0;
-        text-align: center;
-    }
-    .room-url-box a {
-        color: #ffeaa7;
-        font-weight: 700;
-        word-break: break-all;
-    }
-
+    html, body, [class*="css"] { font-family: 'Noto Sans JP', sans-serif; }
+    .main-header { text-align: center; padding: 2rem 0 1rem 0; }
+    .main-header h1 { font-size: 2.5rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.3rem; }
+    .exam-card { background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 2px solid transparent; }
+    .exam-card.active { border-color: #00b894; background: linear-gradient(135deg, #f0fff8 0%, #ffffff 100%); }
+    .room-url-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1.2rem; color: white; margin: 1rem 0; text-align: center; }
+    .room-url-box a { color: #ffeaa7; font-weight: 700; word-break: break-all; }
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# AWS / DynamoDB 設定
+# 3. AWS / DynamoDB 関数
 # ─────────────────────────────────────────────
 def get_db_table():
     try:
@@ -134,9 +86,7 @@ def load_from_aws():
                 if item['item_id'].startswith('room_'):
                     parts = item['item_id'].split('_')
                     exam_name = parts[1]
-                    if exam_name not in new_rooms:
-                        new_rooms[exam_name] = []
-                    
+                    if exam_name not in new_rooms: new_rooms[exam_name] = []
                     new_rooms[exam_name].append({
                         "id": item['item_id'],
                         "url": item['url'],
@@ -155,7 +105,7 @@ def save_config_to_aws():
         })
 
 # ─────────────────────────────────────────────
-# データ初期化
+# 4. ロジック・初期化
 # ─────────────────────────────────────────────
 EXAMS_DEFAULT = {
     "G検定": {"icon": "🤖", "description": "AIの基礎知識・理論"},
@@ -163,46 +113,39 @@ EXAMS_DEFAULT = {
     "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用"},
 }
 
-def init_state():
-    if "rooms" not in st.session_state: st.session_state.rooms = {}
-    if "my_name" not in st.session_state: st.session_state.my_name = ""
-    if "custom_exams" not in st.session_state: st.session_state.custom_exams = {}
-    if "admin_urls" not in st.session_state:
-        st.session_state.admin_urls = {k: "" for k in EXAMS_DEFAULT.keys()}
-    if "last_refresh" not in st.session_state: st.session_state.last_refresh = datetime.now()
-    if "db_loaded" not in st.session_state:
-        load_from_aws()
-        st.session_state.db_loaded = True
+if "rooms" not in st.session_state: st.session_state.rooms = {}
+if "custom_exams" not in st.session_state: st.session_state.custom_exams = {}
+if "admin_urls" not in st.session_state:
+    st.session_state.admin_urls = {k: "" for k in EXAMS_DEFAULT.keys()}
+if "db_loaded" not in st.session_state:
+    load_from_aws()
+    st.session_state.db_loaded = True
 
 def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
-def create_new_room(exam_name, url, user_name):
-    """新しいルームを追加"""
+def create_new_room(exam_name, url, host_name):
+    """ルーム作成時にログインユーザー名を使用"""
     room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         table.put_item(Item={
             'item_id': room_id,
             'url': url,
             'created_at': datetime.now().isoformat(),
-            'host': user_name if user_name else "匿名"
+            'host': host_name
         })
 
 def is_url_valid(url):
     return url.startswith("http://") or url.startswith("https://")
 
 # ─────────────────────────────────────────────
-# メイン
+# 5. サイドバー
 # ─────────────────────────────────────────────
-init_state()
-
-st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と繋がる学習ルーム共有</p></div>""", unsafe_allow_html=True)
-st.divider()
-
 with st.sidebar:
-    st.markdown("### 👤 あなたの名前")
-    name_input = st.text_input("ニックネーム", value=st.session_state.my_name, placeholder="例: たろう", label_visibility="collapsed")
-    if name_input != st.session_state.my_name: st.session_state.my_name = name_input
+    st.image(user_info.get('picture', ''), width=70)
+    st.success(f"ログイン中: {login_user_name} さん")
+    if st.button("ログアウト", use_container_width=True):
+        authenticate.logout()
     
     st.divider()
     st.markdown("### ➕ 検定を追加")
@@ -227,33 +170,25 @@ with st.sidebar:
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
             save_config_to_aws(); st.success("AWSに保存しました！"); st.rerun()
 
-    st.divider()
-    auto_refresh = st.toggle("🔄 自動更新（30秒）", value=False)
-    if auto_refresh:
-        elapsed = (datetime.now() - st.session_state.last_refresh).seconds
-        if elapsed >= 30:
-            st.session_state.last_refresh = datetime.now(); st.rerun()
-        time.sleep(1); st.rerun()
+# ─────────────────────────────────────────────
+# 6. メインコンテンツ
+# ─────────────────────────────────────────────
+st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と繋がる学習ルーム共有</p></div>""", unsafe_allow_html=True)
+st.divider()
 
-# ─────────────────────────────────────────────
-# コンテンツ表示（タブ形式）
-# ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
 exam_names = list(all_exams.keys())
-
 tabs = st.tabs([f"{all_exams[name]['icon']} {name}" for name in exam_names])
 
 for idx, exam_name in enumerate(exam_names):
     with tabs[idx]:
         exam = all_exams[exam_name]
         rooms_list = st.session_state.rooms.get(exam_name, [])
-
         col_left, col_right = st.columns([2, 1])
         
         with col_left:
             st.markdown(f"### 🟢 {exam_name} のルーム一覧")
-            
             if not rooms_list:
                 st.info("現在アクティブなルームはありません。右側から新しいルームを追加してください。")
             else:
@@ -267,8 +202,6 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
-                    
-                    # 修正点: TypeError 回避のため key 引数を削除
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
@@ -279,7 +212,8 @@ for idx, exam_name in enumerate(exam_names):
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
-                        create_new_room(exam_name, url_input, st.session_state.my_name)
+                        # ログイン名を使用してルームを作成
+                        create_new_room(exam_name, url_input, login_user_name)
                         st.balloons(); st.rerun()
                     else:
                         st.error("有効なURLを入力してください")
