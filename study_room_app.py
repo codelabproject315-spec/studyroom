@@ -1,6 +1,6 @@
 """
 学習ルーム共有アプリ - StudyConnect
-Google認証統合版
+Google認証・Secrets完全統合版
 """
 
 import streamlit as st
@@ -11,18 +11,21 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 # ─────────────────────────────────────────────
-# 1. Google 認証設定
+# 1. Google 認証設定 (Secretsの[google_auth]を使用)
 # ─────────────────────────────────────────────
-# 修正点: 必須引数である redirect_uri を追加し、名前を最新仕様に合わせました
+# TypeError回避のため、ファイルを介さずSecretsの値を直接個別の引数に割り当てます
+google_conf = st.secrets["google_auth"]
+
 authenticate = Authenticate(
-    secret_path='client_secret.json', 
+    client_id=google_conf['client_id'],
+    client_secret=google_conf['client_secret'],
+    redirect_uri=google_conf['redirect_uris'][0],
     cookie_name='study_connect_cookie',
-    cookie_key='some_signature_key',
-    cookie_expiry_days=30,
-    redirect_uri='https://ai-quiz-app-ic48ffkwgqnz3p4ptekmfp.streamlit.app', # 必須引数
+    key='some_signature_key',
+    cookie_expiry_days=30
 )
 
-# ログインチェック
+# 認証チェック
 authenticate.check_authenticity()
 
 # ログインしていない場合はログイン画面を表示して停止
@@ -58,7 +61,7 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
     html, body, [class*="css"] { font-family: 'Noto Sans JP', sans-serif; }
-    .main-header { text-align: center; padding: 2rem 0 1rem 0; }
+    .main-header { text-align: center; padding: 1rem 0; }
     .main-header h1 { font-size: 2.5rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.3rem; }
     .exam-card { background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 2px solid transparent; }
     .exam-card.active { border-color: #00b894; background: linear-gradient(135deg, #f0fff8 0%, #ffffff 100%); }
@@ -156,8 +159,10 @@ def is_url_valid(url):
 # 5. サイドバー
 # ─────────────────────────────────────────────
 with st.sidebar:
+    # Googleのプロフィール画像を表示
     st.image(user_info.get('picture', ''), width=70)
     st.success(f"ログイン中: {login_user_name} さん")
+    
     if st.button("ログアウト", use_container_width=True):
         authenticate.logout()
     
@@ -216,6 +221,7 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
+                    # key引数を削除してTypeErrorを防止
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
@@ -226,10 +232,11 @@ for idx, exam_name in enumerate(exam_names):
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
+                        # ニックネーム入力欄を廃止し、ログイン中の名前をホストとして保存
                         create_new_room(exam_name, url_input, login_user_name)
                         st.balloons(); st.rerun()
                     else:
                         st.error("有効なURLを入力してください")
 
 st.divider()
-st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ 閲覧者が自由にルームを追加・共有できます</div>""", unsafe_allow_html=True)
+st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ ログインユーザー名でルームを共有中</div>""", unsafe_allow_html=True)
