@@ -1,6 +1,6 @@
 """
 学習ルーム共有アプリ - StudyConnect
-KeyError解消・安定版
+TypeError解消・Secrets完全統合版
 """
 
 import streamlit as st
@@ -21,34 +21,34 @@ st.set_page_config(
 # ─────────────────────────────────────────────
 # 1. Google 認証設定 (Secretsから直接取得)
 # ─────────────────────────────────────────────
-# セクションの有無を問わず取得できるよう、安全な取得方法に変更
+# Secretsの [google_auth] セクションから安全に取得
 try:
-    # まず [google_auth] セクションから取得を試みる
+    # 画像の通り、Secretsの直下または [google_auth] 内にある情報を取得
     google_conf = st.secrets.get("google_auth", st.secrets)
     
-    # Secretsから値を抽出
-    client_id = google_conf["client_id"]
-    client_secret = google_conf["client_secret"]
-    # redirect_uris がリストか単一文字列かを判別して取得
-    redirect_uri = google_conf["redirect_uris"]
-    if isinstance(redirect_uri, list):
-        redirect_uri = redirect_uri[0]
+    # 必要な情報を抽出
+    cid = google_conf["client_id"]
+    csecret = google_conf["client_secret"]
+    # redirect_uris はリスト形式なので最初の1つを取得
+    ruri = google_conf["redirect_uris"]
+    if isinstance(ruri, list):
+        ruri = ruri[0]
 
 except Exception as e:
-    st.error(f"Secretsの設定が不足しています: {e}")
+    st.error(f"Secretsの設定を確認してください: {e}")
     st.stop()
 
-# インスタンス化
+# 【修正ポイント】引数名を 'secret_key' に修正し、TypeErrorを回避します
 authenticate = Authenticate(
-    client_id=client_id,
-    client_secret=client_secret,
-    redirect_uri=redirect_uri,
+    client_id=cid,
+    client_secret=csecret,
+    redirect_uri=ruri,
     cookie_name='study_connect_cookie',
-    key='study_connect_secret_key_2024',
+    secret_key='study_connect_secret_key_2024', # 'key' から 'secret_key' に変更
     cookie_expiry_days=30,
 )
 
-# 認証チェック (綴りの揺れを吸収)
+# 認証メソッドの実行 (綴りの揺れを吸収)
 try:
     authenticate.check_authentification()
 except:
@@ -94,40 +94,40 @@ with st.sidebar:
 st.title("📚 StudyConnect")
 st.divider()
 
-# ルーム取得ロジック
-def load_all_rooms():
+# ルーム取得
+def load_rooms():
     if table is None: return {}
     try:
         items = table.scan().get('Items', [])
-        rooms_by_exam = {}
+        rooms_dict = {}
         for item in items:
             iid = item.get('item_id', '')
             if iid.startswith('room_'):
                 # room_検定名_timestamp
                 exam = iid.split('_')[1]
-                if exam not in rooms_by_exam: rooms_by_exam[exam] = []
-                rooms_by_exam[exam].append(item)
-        return rooms_by_exam
+                if exam not in rooms_dict: rooms_dict[exam] = []
+                rooms_dict[exam].append(item)
+        return rooms_dict
     except:
         return {}
 
-current_rooms = load_all_rooms()
-exams_list = {"G検定": "🤖", "E資格": "⚡", "AWS資格": "☁️"}
-tabs = st.tabs([f"{v} {k}" for k, v in exams_list.items()])
+all_rooms = load_rooms()
+exams = {"G検定": "🤖", "E資格": "⚡", "AWS資格": "☁️"}
+tabs = st.tabs([f"{v} {k}" for k, v in exams.items()])
 
-for idx, (exam_name, icon) in enumerate(exams_list.items()):
+for idx, (exam_name, icon) in enumerate(exams.items()):
     with tabs[idx]:
-        rooms = current_rooms.get(exam_name, [])
+        rooms = all_rooms.get(exam_name, [])
         col_l, col_r = st.columns([2, 1])
         
         with col_l:
             st.subheader(f"{icon} {exam_name} 一覧")
             if not rooms:
-                st.info("アクティブなルームはありません")
+                st.info("ルームはありません")
             for r in rooms:
                 with st.container(border=True):
-                    st.write(f"👋 **{r.get('host', '匿名')}** のルーム")
-                    st.link_button("参加する🚀", r.get('url', '#'), key=f"btn_{r['item_id']}", use_container_width=True)
+                    st.write(f"👋 **{r.get('host', '匿名')}** さんのルーム")
+                    st.link_button("参加🚀", r.get('url', '#'), key=f"btn_{r['item_id']}", use_container_width=True)
         
         with col_r:
             st.subheader("🏰 ルーム公開")
