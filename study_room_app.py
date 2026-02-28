@@ -397,7 +397,11 @@ def show_auth_page():
 
             # STEP 3: プロフィール & パスワード設定
             elif reg_step == 3:
-                reg_email = st.session_state.reg_email
+                reg_email = st.session_state.get("reg_email")
+                if not reg_email:
+                    # reg_email が消えていたら STEP1 に戻す
+                    st.session_state.reg_step = 1
+                    st.rerun()
                 with st.container(border=True):
                     st.markdown('<span class="step-badge">STEP 3 / 3　アカウント設定</span>', unsafe_allow_html=True)
                     st.markdown("#### プロフィールとパスワードを設定")
@@ -425,8 +429,9 @@ def show_auth_page():
                                     'is_admin': False,
                                 }
                                 st.session_state.my_name = display_name
+                                # reg_email を先にクリアしてから step をリセット
+                                st.session_state.pop("reg_email", None)
                                 st.session_state.reg_step = 1
-                                st.session_state.reg_email = None
                                 st.success("登録が完了しました！ようこそ！")
                                 time.sleep(0.6)
                                 st.rerun()
