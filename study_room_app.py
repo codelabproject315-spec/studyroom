@@ -26,95 +26,91 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&family=DM+Sans:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap');
 
+    /* ── ベースリセット ── */
     html, body, [class*="css"] {
-        font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
-        color: #e8e8f0;
+        font-family: 'Noto Sans JP', sans-serif !important;
     }
-    /* Streamlitデフォルト白背景を強制上書き */
-    .stMarkdown, .element-container, .stAlert,
-    div[data-testid="column"] > div,
-    section[data-testid="stSidebar"] + div {
-        background: transparent !important;
-    }
-    /* メインブロック */
-    .main .block-container {
-        background: transparent !important;
-        padding-top: 1rem !important;
-    }
-    /* ダーク入力欄 */
-    .stTextInput input, .stSelectbox > div > div {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
-        color: #e8e8f0 !important;
-        border-radius: 8px !important;
-    }
-    /* ダークボタン（セカンダリ） */
-    .stButton > button:not([kind="primary"]) {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
-        color: #e8e8f0 !important;
-        border-radius: 8px !important;
-    }
-    .stButton > button:not([kind="primary"]):hover {
-        background: rgba(255,255,255,0.15) !important;
-    }
-    .stApp { background: #0f0f1a; }
 
-    /* ── サイドバー全体 ── */
+    /* ── 背景：清潔な明るいグレー ── */
+    .stApp { background: #f7f8fa !important; }
+    .main .block-container { background: transparent !important; padding-top: 1rem !important; }
+    .stMarkdown, .element-container { background: transparent !important; }
+    div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"],
+    div[data-testid="column"] { background: transparent !important; }
+
+    /* ── サイドバー：落ち着いた濃紺 ── */
     [data-testid="stSidebar"] {
-        background: #1a1a2e !important;
-        border-right: none !important;
+        background: #1e2235 !important;
+        border-right: 1px solid rgba(255,255,255,0.06) !important;
     }
-    [data-testid="stSidebar"] * { color: #e8e8f0 !important; }
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] div { color: #c8cde8 !important; }
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 { color: #e8eaf6 !important; }
+    [data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.08) !important; margin: 0.75rem 0 !important; }
+
+    /* サイドバーボタン */
     [data-testid="stSidebar"] .stButton > button {
-        background: rgba(255,255,255,0.08) !important;
+        background: rgba(255,255,255,0.07) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #e8e8f0 !important;
+        color: #c8cde8 !important;
         border-radius: 10px !important;
-        font-size: 0.85rem !important;
         transition: all 0.2s !important;
     }
     [data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255,255,255,0.15) !important;
+        background: rgba(255,255,255,0.13) !important;
     }
-    [data-testid="stSidebar"] .stTextInput input {
+
+    /* サイドバーexpander */
+    [data-testid="stSidebar"] [data-testid="stExpander"] {
         background: rgba(255,255,255,0.06) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #e8e8f0 !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] input {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: #e8eaf6 !important;
         border-radius: 8px !important;
     }
-    [data-testid="stSidebar"] hr {
-        border-color: rgba(255,255,255,0.1) !important;
-        margin: 0.75rem 0 !important;
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
+        background: rgba(99,102,241,0.3) !important;
+        border: 1px solid rgba(99,102,241,0.5) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
+        background: rgba(99,102,241,0.55) !important;
     }
 
     /* ── ユーザーセクション ── */
     .user-section {
-        background: rgba(255,255,255,0.06) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-radius: 14px;
-        padding: 1.1rem 1rem;
-        margin-bottom: 0.8rem;
-        text-align: center;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 1.1rem 1rem;
+        margin-bottom: 0.8rem; text-align: center;
     }
     .user-avatar {
         width: 46px; height: 46px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.25rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; font-size: 1.25rem;
         margin: 0 auto 0.55rem auto;
     }
-    .user-name { font-size: 0.92rem; font-weight: 700; color: #fff !important; margin-bottom: 0.15rem; }
+    .user-name  { font-size: 0.92rem; font-weight: 700; color: #fff !important; margin-bottom: 0.15rem; }
     .user-email { font-size: 0.7rem; color: rgba(255,255,255,0.4) !important; word-break: break-all; }
     .admin-pill {
         display: inline-block;
         background: linear-gradient(135deg, #f59e0b, #ef4444);
         color: white !important; border-radius: 20px;
-        padding: 0.1rem 0.65rem; font-size: 0.65rem; font-weight: 700;
-        margin-top: 0.4rem;
+        padding: 0.1rem 0.65rem; font-size: 0.65rem; font-weight: 700; margin-top: 0.4rem;
     }
 
     /* ── AIランチャー ── */
@@ -125,261 +121,125 @@ st.markdown("""
     }
     .ai-card {
         display: flex; align-items: center; gap: 0.8rem;
-        background: rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.06);
         border: 1px solid rgba(255,255,255,0.09);
         border-radius: 12px; padding: 0.8rem 1rem;
         margin-bottom: 0.5rem; text-decoration: none !important;
         transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
     .ai-card:hover {
-        background: rgba(102,126,234,0.22);
-        border-color: rgba(102,126,234,0.45);
+        background: rgba(99,102,241,0.2);
+        border-color: rgba(99,102,241,0.4);
         transform: translateX(4px);
-        text-decoration: none !important;
     }
-    .ai-card-emoji { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
-    .ai-card-body { flex: 1; min-width: 0; }
-    .ai-card-title {
-        font-size: 0.84rem; font-weight: 700;
-        color: #c7d2fe !important; display: block;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .ai-card-sub {
-        font-size: 0.7rem; color: rgba(199,210,254,0.5) !important;
-        display: block; margin-top: 0.1rem;
-    }
+    .ai-card-emoji { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+    .ai-card-body  { flex: 1; min-width: 0; }
+    .ai-card-title { font-size: 0.83rem; font-weight: 700; color: #c7d2fe !important; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ai-card-sub   { font-size: 0.7rem; color: rgba(199,210,254,0.5) !important; display: block; margin-top: 0.1rem; }
     .ai-card-arrow { font-size: 0.8rem; color: rgba(255,255,255,0.22) !important; flex-shrink: 0; }
 
     /* ── メインヘッダー ── */
     .main-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px;
-        padding: 2.2rem 2rem; margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #1e2235 0%, #252a45 100%);
+        border-radius: 20px; padding: 2.2rem 2rem; margin-bottom: 1.5rem;
         text-align: center; position: relative; overflow: hidden;
     }
     .main-header::before {
         content: ''; position: absolute; inset: 0;
-        background:
-            radial-gradient(ellipse at 25% 50%, rgba(102,126,234,0.28) 0%, transparent 55%),
-            radial-gradient(ellipse at 75% 50%, rgba(118,75,162,0.22) 0%, transparent 55%);
+        background: radial-gradient(ellipse at 25% 50%, rgba(99,102,241,0.2) 0%, transparent 60%),
+                    radial-gradient(ellipse at 75% 50%, rgba(139,92,246,0.15) 0%, transparent 60%);
     }
-    .main-header h1 {
-        font-size: 2.2rem; font-weight: 900; color: #fff;
-        margin: 0 0 0.3rem 0; position: relative;
-    }
-    .main-header p {
-        color: rgba(255,255,255,0.5); font-size: 0.9rem;
-        margin: 0; position: relative;
-    }
-
-    /* ── ルームカード ── */
-    .room-card {
-        background: #fff; border-radius: 16px; padding: 1.4rem 1.6rem;
-        margin-bottom: 1rem; border: 1px solid #e2e4ea;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    }
-    .room-card-host {
-        font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.8rem;
-    }
-    .room-url-box {
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 10px;
-        padding: 0.9rem 1.1rem;
-        word-break: break-all;
-    }
-    .room-url-box a {
-        color: #93c5fd !important;
-        font-size: 0.84rem;
-        font-weight: 500;
-        text-decoration: none;
-    }
-    .room-url-box a:hover { text-decoration: underline; }
-
-    /* ── 空ステート ── */
-    .empty-state {
-        background: rgba(255,255,255,0.04); border-radius: 16px; padding: 2.8rem 2rem;
-        text-align: center; border: 2px dashed rgba(255,255,255,0.15); color: rgba(255,255,255,0.45);
-    }
-    .empty-state-icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
-    .empty-state-title { font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem; }
-    .empty-state-sub { font-size: 0.85rem; }
-
-    /* ── ルーム追加パネル ── */
-    .add-room-title { font-size: 0.95rem; font-weight: 700; color: #e8e8f0; margin-bottom: 0.2rem; }
-    .add-room-sub { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 0.6rem; }
-
-    /* ── セクションタイトル ── */
-    .section-title {
-        font-size: 1.05rem; font-weight: 800; color: #e8e8f0;
-        margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
-    }
-
-    /* ── ユーザー管理：ユーザー行カード ── */
-    .user-row-card {
-        background: #f0eef8;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 0.9rem 1.1rem;
-        margin-bottom: 0.6rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-    .user-row-name {
-        font-size: 0.95rem; font-weight: 700; color: #1a1a2e;
-    }
-    .user-row-email {
-        font-size: 0.78rem; color: #666; margin-left: 0.4rem;
-    }
-    .user-row-date {
-        font-size: 0.72rem; color: #999; margin-top: 0.2rem;
-    }
-    .user-row-admin {
-        display: inline-block;
-        background: linear-gradient(135deg, #f59e0b, #ef4444);
-        color: white; border-radius: 20px;
-        padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
-        margin-left: 0.4rem; vertical-align: middle;
-    }
-
-    /* expander の背景を統一 */
-    [data-testid="stExpander"] {
-        background: #fff !important;
-        border: 1.5px solid #eae7f5 !important;
-        border-radius: 14px !important;
-    }
-    [data-testid="stExpander"] > div:first-child {
-        border-radius: 14px !important;
-    }
-
-    /* ── ログイン ── */
-    .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #1a1a2e; margin-bottom: 0.3rem; }
-    .login-subtitle { text-align: center; color: #888; font-size: 0.9rem; }
-    .otp-hint {
-        background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
-        padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.88rem;
-        color: #2563eb; line-height: 1.55;
-    }
-    .step-badge {
-        display: inline-block; background: #1a1a2e; color: white;
-        border-radius: 20px; padding: 0.15rem 0.75rem; font-size: 0.72rem;
-        font-weight: 700; margin-bottom: 0.6rem; letter-spacing: 0.04em;
-    }
+    .main-header h1 { font-size: 2.2rem; font-weight: 900; color: #fff; margin: 0 0 0.3rem 0; position: relative; }
+    .main-header p  { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0; position: relative; }
 
     /* ── タブ ── */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(255,255,255,0.07); border-radius: 12px; padding: 4px; gap: 2px;
+        background: #eef0f5; border-radius: 12px; padding: 4px; gap: 2px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 9px !important; font-weight: 600 !important;
         font-size: 0.84rem !important; padding: 0.4rem 1rem !important;
-        color: rgba(255,255,255,0.6) !important;
+        color: #555 !important;
     }
     .stTabs [aria-selected="true"] {
-        background: rgba(102,126,234,0.4) !important; color: white !important;
+        background: #1e2235 !important; color: white !important;
     }
 
-    /* ── ボタン ── */
+    /* ── メインボタン ── */
     .stButton > button[kind="primary"] {
-        background: rgba(102,126,234,0.75) !important; border: none !important;
+        background: #1e2235 !important; border: none !important;
         border-radius: 10px !important; font-weight: 700 !important;
-        transition: all 0.2s !important;
+        color: #fff !important; transition: opacity 0.2s !important;
     }
-    .stButton > button[kind="primary"]:hover { background: rgba(102,126,234,1) !important; }
+    .stButton > button[kind="primary"]:hover { opacity: 0.82 !important; }
+    .stButton > button:not([kind="primary"]) {
+        background: #fff !important; border: 1px solid #dde1ea !important;
+        color: #333 !important; border-radius: 8px !important;
+    }
+    .stButton > button:not([kind="primary"]):hover { background: #f0f2f6 !important; }
 
-    /* ── ユーザー管理：ユーザー行カード ── */
-    .user-row-card {
-        background: rgba(255,255,255,0.06) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-radius: 12px;
-        padding: 0.85rem 1.1rem;
-        margin-bottom: 0.5rem;
-    }
-    .user-row-card {
-        display: grid;
-        grid-template-columns: 140px 1fr auto;
-        align-items: center;
-        gap: 0 1.5rem;
-    }
-    .user-row-name { font-size: 1rem; font-weight: 700; color: #e8e8f0; }
-    .user-row-email { font-size: 0.88rem; color: rgba(255,255,255,0.6); font-weight: 500; }
-    .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
-    .user-row-date { font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 500; white-space: nowrap; }
-    .user-row-admin {
-        display: inline-block;
-        background: linear-gradient(135deg, #f59e0b, #ef4444);
-        color: white; border-radius: 20px;
-        padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
-        margin-left: 0.5rem; vertical-align: middle;
-    }
-
-    /* ── expander 共通 ── */
+    /* ── expander（メイン） ── */
     [data-testid="stExpander"] {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-radius: 14px !important;
-        overflow: hidden;
-    }
-    [data-testid="stExpander"] summary,
-    [data-testid="stExpander"] p,
-    [data-testid="stExpander"] span,
-    [data-testid="stExpander"] label {
-        color: #e8e8f0 !important;
-    }
-    /* サイドバー内 expander は濃色 */
-    [data-testid="stSidebar"] [data-testid="stExpander"] {
-        background: rgba(255,255,255,0.10) !important;
-        border: 1px solid rgba(255,255,255,0.18) !important;
-        border-radius: 12px !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] summary,
-    [data-testid="stSidebar"] [data-testid="stExpander"] p,
-    [data-testid="stSidebar"] [data-testid="stExpander"] label,
-    [data-testid="stSidebar"] [data-testid="stExpander"] span {
-        color: #e8e8f0 !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] input {
-        background: rgba(255,255,255,0.10) !important;
-        color: #e8e8f0 !important;
-        border-color: rgba(255,255,255,0.2) !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
-        background: rgba(102,126,234,0.35) !important;
-        border: 1px solid rgba(102,126,234,0.5) !important;
-        color: #fff !important;
-        font-weight: 700 !important;
-        border-radius: 10px !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
-        background: rgba(102,126,234,0.55) !important;
+        background: #fff !important;
+        border: 1px solid #e2e6ed !important;
+        border-radius: 14px !important; overflow: hidden;
     }
 
-    /* ── メインコンテナ（border=True）を白カードに統一 ── */
+    /* ── コンテナ(border=True) ── */
     [data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        background: #fff !important;
+        border: 1px solid #e2e6ed !important;
         border-radius: 14px !important;
-        box-shadow: none !important;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.05) !important;
     }
 
-    /* ── Streamlit白背景を根本から上書き ── */
-    /* メインエリア全体 */
-    .stApp > div, .stApp section, .stApp .main {
-        background: transparent !important;
+    /* ── 入力欄（メイン） ── */
+    .stTextInput input {
+        border: 1px solid #dde1ea !important;
+        border-radius: 8px !important;
+        background: #fff !important;
+        color: #1e2235 !important;
     }
-    /* st.container / st.columns の白背景 */
-    div[data-testid="stVerticalBlock"],
-    div[data-testid="stHorizontalBlock"],
-    div[data-testid="column"],
-    div[class*="stColumn"],
-    div[class*="block-container"] {
-        background: transparent !important;
+    .stTextInput input:focus { border-color: #6366f1 !important; }
+
+    /* ── セクションタイトル ── */
+    .section-title { font-size: 1rem; font-weight: 800; color: #1e2235; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .add-room-title { font-size: 0.95rem; font-weight: 700; color: #1e2235; margin-bottom: 0.2rem; }
+    .add-room-sub   { font-size: 0.78rem; color: #888; margin-bottom: 0.6rem; }
+
+    /* ── 空ステート ── */
+    .empty-state { background: #fff; border-radius: 16px; padding: 2.8rem 2rem; text-align: center; border: 2px dashed #dde1ea; color: #aaa; }
+    .empty-state-title { font-weight: 700; color: #555; margin-bottom: 0.3rem; }
+    .empty-state-sub   { font-size: 0.85rem; }
+
+    /* ── ユーザー行カード ── */
+    .user-row-card {
+        display: grid; grid-template-columns: 130px 1fr auto;
+        align-items: center; gap: 0 1.5rem;
+        background: #f8f9fc !important; border: 1px solid #e2e6ed !important;
+        border-radius: 12px; padding: 0.85rem 1.1rem; margin-bottom: 0.5rem;
     }
-    /* Streamlitが注入するカード白背景 */
-    div[data-testid="stVerticalBlockBorderWrapper"] > div,
-    div[data-testid="stVerticalBlockBorderWrapper"] > div > div {
-        background: transparent !important;
+    .user-row-name  { font-size: 0.95rem; font-weight: 700; color: #1e2235; }
+    .user-row-email { font-size: 0.88rem; color: #555; font-weight: 500; }
+    .user-row-meta  { display: flex; align-items: center; gap: 0.8rem; }
+    .user-row-date  { font-size: 0.78rem; color: #999; white-space: nowrap; }
+    .user-row-admin {
+        display: inline-block; background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white !important; border-radius: 20px;
+        padding: 0.1rem 0.55rem; font-size: 0.65rem; font-weight: 700;
+    }
+
+    /* ── ログイン画面 ── */
+    .login-title    { text-align: center; font-size: 1.8rem; font-weight: 900; color: #1e2235; margin-bottom: 0.3rem; }
+    .login-subtitle { text-align: center; color: #888; font-size: 0.9rem; }
+    .otp-hint {
+        background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+        padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.88rem; color: #2563eb; line-height: 1.55;
+    }
+    .step-badge {
+        display: inline-block; background: #1e2235; color: white;
+        border-radius: 20px; padding: 0.15rem 0.75rem; font-size: 0.72rem;
+        font-weight: 700; margin-bottom: 0.6rem;
     }
 
     footer { visibility: hidden; }
@@ -644,12 +504,12 @@ def show_user_management_panel():
                 col_info, col_del = st.columns([5, 1])
                 with col_info:
                     html = (
-                        '<div class="user-row-card" style="background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.1)!important;border-radius:12px;padding:0.85rem 1.1rem;margin-bottom:0.5rem;display:grid;grid-template-columns:140px 1fr auto;align-items:center;gap:0 1.5rem;">'
-                        f'<span class="user-row-name" style="color:#e8e8f0;font-weight:700;">{name}</span>'
-                        f'<span class="user-row-email" style="color:rgba(255,255,255,0.6);font-size:0.88rem;">{email}</span>'
-                        '<span class="user-row-meta" style="display:flex;align-items:center;gap:0.8rem;">'
+                        '<div style="background:#f8f9fc;border:1px solid #e2e6ed;border-radius:12px;padding:0.85rem 1.1rem;margin-bottom:0.5rem;display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:0 1.5rem;">'
+                        f'<span style="font-size:0.95rem;font-weight:700;color:#1e2235;">{name}</span>'
+                        f'<span style="font-size:0.88rem;color:#555;font-weight:500;">{email}</span>'
+                        '<span style="display:flex;align-items:center;gap:0.8rem;">'
                         + admin_tag +
-                        f'<span class="user-row-date" style="color:rgba(255,255,255,0.4);font-size:0.82rem;white-space:nowrap;">登録: {date}</span>'
+                        f'<span style="font-size:0.78rem;color:#999;white-space:nowrap;">登録: {date}</span>'
                         '</span>'
                         '</div>'
                     )
@@ -886,10 +746,10 @@ for idx, exam_name in enumerate(exam_names):
                     _host = room['host']
                     _url  = room['url']
                     st.markdown(
-                        f'<div class="room-card" style="background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1rem;">'
-                        f'<div class="room-card-host" style="color:#e8e8f0;font-weight:700;margin-bottom:0.8rem;">👋 {_host} のルーム</div>'
-                        f'<div class="room-url-box" style="background:rgba(255,255,255,0.07)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:10px;padding:0.9rem 1.1rem;word-break:break-all;">'
-                        f'<a href="{_url}" target="_blank" style="color:#93c5fd!important;font-size:0.84rem;text-decoration:none;">{_url}</a>'
+                        f'<div style="background:#fff;border:1px solid #e2e6ed;border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1rem;">'
+                        f'<div style="font-size:1rem;font-weight:700;color:#1e2235;margin-bottom:0.8rem;">👋 {_host} のルーム</div>'
+                        f'<div style="background:#f3f4f8;border:1px solid #e2e6ed;border-radius:10px;padding:0.9rem 1.1rem;word-break:break-all;">'
+                        f'<a href="{_url}" target="_blank" style="color:#4f46e5;font-size:0.84rem;font-weight:500;text-decoration:none;">{_url}</a>'
                         f'</div></div>',
                         unsafe_allow_html=True
                     )
