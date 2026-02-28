@@ -271,12 +271,48 @@ st.markdown("""
         margin-left: 0.5rem; vertical-align: middle;
     }
 
-    /* expander を白カードに */
+    /* ── expander 共通 ── */
     [data-testid="stExpander"] {
         background: #fff !important;
-        border: 1.5px solid #eae7f5 !important;
+        border: 1.5px solid #ddd8f0 !important;
         border-radius: 14px !important;
         overflow: hidden;
+    }
+    /* サイドバー内 expander は濃色 */
+    [data-testid="stSidebar"] [data-testid="stExpander"] {
+        background: rgba(255,255,255,0.10) !important;
+        border: 1px solid rgba(255,255,255,0.18) !important;
+        border-radius: 12px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] summary,
+    [data-testid="stSidebar"] [data-testid="stExpander"] p,
+    [data-testid="stSidebar"] [data-testid="stExpander"] label,
+    [data-testid="stSidebar"] [data-testid="stExpander"] span {
+        color: #e8e8f0 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] input {
+        background: rgba(255,255,255,0.10) !important;
+        color: #e8e8f0 !important;
+        border-color: rgba(255,255,255,0.2) !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
+        background: rgba(102,126,234,0.35) !important;
+        border: 1px solid rgba(102,126,234,0.5) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
+        background: rgba(102,126,234,0.55) !important;
+    }
+
+    /* ── メイン右カラム（ルーム追加パネル）── */
+    .add-panel-wrap {
+        background: #fff;
+        border: 1.5px solid #eae7f5;
+        border-radius: 16px;
+        padding: 1.4rem 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     }
 
     footer { visibility: hidden; }
@@ -788,6 +824,7 @@ for idx, exam_name in enumerate(exam_names):
                     st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
 
         with col_right:
+            st.markdown('<div class="add-panel-wrap">', unsafe_allow_html=True)
             st.markdown('<div class="add-room-title">🏰 ルームを追加</div>', unsafe_allow_html=True)
             st.markdown('<div class="add-room-sub">通話URLを貼り付けて公開しよう</div>', unsafe_allow_html=True)
             url_input = st.text_input("URL", value="", placeholder="https://zoom.us/j/...",
@@ -798,6 +835,7 @@ for idx, exam_name in enumerate(exam_names):
                     st.balloons(); st.rerun()
                 else:
                     st.error("有効なURLを入力してください（http / https）")
+            st.markdown('</div>', unsafe_allow_html=True)
 
 if admin_tab:
     with admin_tab:
