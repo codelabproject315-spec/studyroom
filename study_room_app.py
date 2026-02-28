@@ -77,6 +77,64 @@ st.markdown("""
         color: white; border-radius: 20px; padding: 0.2rem 0.7rem;
         font-size: 0.75rem; font-weight: 600; margin-left: 0.4rem; vertical-align: middle;
     }
+
+    /* ── AIツールランチャー カード ── */
+    .ai-tool-card {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        background: rgba(102,126,234,0.08);
+        border: 1px solid rgba(102,126,234,0.2);
+        border-radius: 12px;
+        padding: 0.65rem 0.85rem;
+        margin-bottom: 0.5rem;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .ai-tool-card:hover {
+        background: rgba(102,126,234,0.18);
+        border-color: rgba(102,126,234,0.5);
+        transform: translateX(3px);
+        text-decoration: none;
+        color: inherit;
+    }
+    .ai-tool-icon {
+        font-size: 1.4rem;
+        width: 2rem;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .ai-tool-info { flex: 1; min-width: 0; }
+    .ai-tool-name {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #c7d2fe;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .ai-tool-desc {
+        font-size: 0.7rem;
+        color: rgba(199,210,254,0.6);
+        line-height: 1.3;
+        margin-top: 0.1rem;
+    }
+    .ai-tool-arrow {
+        font-size: 0.75rem;
+        color: rgba(199,210,254,0.4);
+        flex-shrink: 0;
+    }
+    .launcher-section-title {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(199,210,254,0.5);
+        margin: 0.3rem 0 0.6rem 0;
+    }
+
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -141,7 +199,7 @@ def save_otp(email: str, code: str):
         'email': email,
         'code': code,
         'expires_at': expires.isoformat(),
-        'expires_at_ttl': int(expires.timestamp()),  # DynamoDB TTL用
+        'expires_at_ttl': int(expires.timestamp()),
     })
 
 
@@ -155,14 +213,13 @@ def verify_otp(email: str, input_code: str) -> bool:
             return False
         if datetime.utcnow() > datetime.fromisoformat(item['expires_at']):
             return False
-        tbl_otp().delete_item(Key={'email': email})  # 使い捨て
+        tbl_otp().delete_item(Key={'email': email})
         return True
     except Exception:
         return False
 
 
 def send_otp_email(email: str, code: str, purpose: str = "メール確認") -> bool:
-    """GmailのSMTPでOTPメールを送信する。"""
     subject = f"【StudyConnect】{purpose}コード"
     body_html = f"""
 <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;">
@@ -302,10 +359,8 @@ def show_auth_page():
 
     col_l, col_form, col_r = st.columns([1, 1.4, 1])
     with col_form:
-        # ログイン / 新規登録 タブ切り替え
         tab_login, tab_register = st.tabs(["🔐 ログイン", "✉️ 新規登録"])
 
-        # ──── ログインタブ ────
         with tab_login:
             with st.container(border=True):
                 email = st.text_input("メールアドレス", placeholder="you@example.com", key="li_email")
@@ -329,11 +384,9 @@ def show_auth_page():
                         else:
                             st.error("メールアドレスまたはパスワードが正しくありません")
 
-        # ──── 新規登録タブ ────
         with tab_register:
             reg_step = st.session_state.get("reg_step", 1)
 
-            # STEP 1: メールアドレス入力
             if reg_step == 1:
                 with st.container(border=True):
                     st.markdown('<span class="step-badge">STEP 1 / 3　メール確認</span>', unsafe_allow_html=True)
@@ -358,7 +411,6 @@ def show_auth_page():
                                 st.session_state.reg_email = e
                                 st.rerun()
 
-            # STEP 2: OTPコード確認
             elif reg_step == 2:
                 reg_email = st.session_state.reg_email
                 with st.container(border=True):
@@ -395,11 +447,9 @@ def show_auth_page():
                             send_otp_email(reg_email, code, "メール確認")
                         st.success("新しいコードを送信しました")
 
-            # STEP 3: プロフィール & パスワード設定
             elif reg_step == 3:
                 reg_email = st.session_state.get("reg_email")
                 if not reg_email:
-                    # reg_email が消えていたら STEP1 に戻す
                     st.session_state.reg_step = 1
                     st.rerun()
                 with st.container(border=True):
@@ -421,7 +471,6 @@ def show_auth_page():
                         else:
                             ok = db_create_user(reg_email, new_pass, display_name)
                             if ok:
-                                # 登録完了 → そのままログイン状態へ
                                 st.session_state.authenticated = True
                                 st.session_state.current_user = {
                                     'email': reg_email,
@@ -429,7 +478,6 @@ def show_auth_page():
                                     'is_admin': False,
                                 }
                                 st.session_state.my_name = display_name
-                                # reg_email を先にクリアしてから step をリセット
                                 st.session_state.pop("reg_email", None)
                                 st.session_state.reg_step = 1
                                 st.success("登録が完了しました！ようこそ！")
@@ -505,6 +553,50 @@ def show_user_management_panel():
                     st.success("表示名を変更しました")
                 else:
                     st.error("変更に失敗しました")
+
+
+# ─────────────────────────────────────────────
+# AIツールランチャー（サイドバー用）
+# ─────────────────────────────────────────────
+
+def show_ai_launcher():
+    """サイドバーにAIツールのランチャーカードを表示する"""
+    st.markdown('<div class="launcher-section-title">🚀 AIツール</div>', unsafe_allow_html=True)
+
+    tools = [
+        {
+            "icon": "🤝",
+            "name": "RelationAI",
+            "desc": "人間関係サポート",
+            "url": "https://relationai-one.vercel.app/",
+        },
+        {
+            "icon": "🍳",
+            "name": "冷蔵庫レシピ",
+            "desc": "AIレシピ生成",
+            "url": "https://recipe-rust-six.vercel.app/",
+        },
+        {
+            "icon": "🧠",
+            "name": "AIクイズ",
+            "desc": "知識を試そう！",
+            "url": "https://ai-quiz-app1.vercel.app/",
+        },
+    ]
+
+    cards_html = ""
+    for t in tools:
+        cards_html += f"""
+        <a class="ai-tool-card" href="{t['url']}" target="_blank" rel="noopener">
+            <span class="ai-tool-icon">{t['icon']}</span>
+            <span class="ai-tool-info">
+                <span class="ai-tool-name">{t['name']}</span>
+                <span class="ai-tool-desc">{t['desc']}</span>
+            </span>
+            <span class="ai-tool-arrow">↗</span>
+        </a>"""
+
+    st.markdown(cards_html, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
@@ -629,6 +721,11 @@ with st.sidebar:
                   "reg_step", "reg_email"]:
             st.session_state.pop(k, None)
         st.rerun()
+
+    st.divider()
+
+    # ── AIツールランチャー ──
+    show_ai_launcher()
 
     st.divider()
     st.markdown("### ➕ 検定を追加")
