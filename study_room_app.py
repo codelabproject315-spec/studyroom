@@ -283,7 +283,7 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            # ★変更点: st.button に一本化し、JSで別窓を開きつつDBを更新
+                            # ★修正箇所: ボタン1つに統合
                             if st.button("通話に参加する🚀", key=f"join_act_{room['id']}", type="primary", use_container_width=True):
                                 # 1. DBのカウントを更新
                                 join_existing_room(room['id'], st.session_state.my_name)
