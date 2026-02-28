@@ -152,13 +152,19 @@ st.markdown("""
         font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.8rem;
     }
     .room-url-box {
-        background: #1a1a2e; border-radius: 10px;
-        padding: 0.9rem 1.1rem; word-break: break-all;
+        background: #f0f2f6;
+        border: 1px solid #e2e4ea;
+        border-radius: 10px;
+        padding: 0.9rem 1.1rem;
+        word-break: break-all;
     }
     .room-url-box a {
-        color: #a5b4fc !important; font-size: 0.82rem;
-        font-weight: 500; text-decoration: none;
+        color: #3b5bdb !important;
+        font-size: 0.84rem;
+        font-weight: 500;
+        text-decoration: none;
     }
+    .room-url-box a:hover { text-decoration: underline; }
 
     /* ── 空ステート ── */
     .empty-state {
@@ -170,8 +176,8 @@ st.markdown("""
     .empty-state-sub { font-size: 0.85rem; }
 
     /* ── ルーム追加パネル ── */
-    .add-room-title { font-size: 1rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
-    .add-room-sub { font-size: 0.78rem; color: #999; margin-bottom: 0; }
+    .add-room-title { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.2rem; }
+    .add-room-sub { font-size: 0.78rem; color: #888; margin-bottom: 0.6rem; }
 
     /* ── セクションタイトル ── */
     .section-title {
