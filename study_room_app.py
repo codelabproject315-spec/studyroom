@@ -4,6 +4,12 @@ Google認証・Secrets完全統合版
 """
 
 import streamlit as st
+import json
+import time
+import os
+from datetime import datetime
+import boto3
+from streamlit_google_auth import Authenticate
 
 # ─────────────────────────────────────────────
 # 0. ページ設定（必ず最初に呼ぶ）
@@ -15,21 +21,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-import json
-import time
-from datetime import datetime
-import boto3
-from streamlit_google_auth import Authenticate
-
 # ─────────────────────────────────────────────
 # 1. Google 認証設定
 # ─────────────────────────────────────────────
-# streamlit-google-auth は JSONファイルパスを受け取る仕様のため
-# Secrets の値を一時ファイルに書き出す
 google_conf = st.secrets["google_auth"]
 
+# 一時ファイルパスの定義
 CREDENTIALS_PATH = "/tmp/google_credentials.json"
 
+# Secrets の値を辞書形式に整理
 credentials_dict = {
     "web": {
         "client_id": google_conf["client_id"],
@@ -40,6 +40,7 @@ credentials_dict = {
     }
 }
 
+# 認証用JSONファイルの書き出し
 with open(CREDENTIALS_PATH, "w") as f:
     json.dump(credentials_dict, f)
 
@@ -51,7 +52,7 @@ authenticate = Authenticate(
     cookie_expiry_days=30,
 )
 
-# ※ ライブラリのメソッド名は「authentification」(フランス語由来のtypo、正しい綴りではない)
+# ライブラリのメソッド名は「authentification」
 authenticate.check_authentification()
 
 # ログインしていない場合はログイン画面を表示して停止
@@ -95,6 +96,7 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # 3. AWS / DynamoDB 関数
 # ─────────────────────────────────────────────
+@st.cache_resource
 def get_db_table():
     try:
         session = boto3.Session(
@@ -111,12 +113,12 @@ def get_db_table():
 table = get_db_table()
 
 def load_from_aws():
-    if not table:
+    if table is None:
         return
     try:
         resp = table.get_item(Key={'item_id': 'config_master'})
         if 'Item' in resp:
-            st.session_state.admin_urls = resp['Item'].get('admin_urls', st.session_state.admin_urls)
+            st.session_state.admin_urls = resp['Item'].get('admin_urls', st.session_state.get('admin_urls', {}))
             st.session_state.custom_exams = resp['Item'].get('custom_exams', {})
 
         items = table.scan().get('Items', [])
@@ -124,9 +126,8 @@ def load_from_aws():
         for item in items:
             if not item['item_id'].startswith('room_'):
                 continue
-            # フォーマット: room_{exam_name}_{unix_timestamp}
-            rest = item['item_id'][len('room_'):]   # "exam_name_1234567890"
-            parts = rest.rsplit('_', 1)             # ["exam_name", "1234567890"]
+            rest = item['item_id'][len('room_'):]
+            parts = rest.rsplit('_', 1)
             if len(parts) != 2:
                 continue
             exam_name = parts[0]
@@ -238,6 +239,7 @@ st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と�
             unsafe_allow_html=True)
 st.divider()
 
+# 最新情報の読み込み
 load_from_aws()
 
 all_exams = get_all_exams()
@@ -271,9 +273,11 @@ for idx, exam_name in enumerate(exam_names):
             st.markdown("#### 🏰 ルームを追加")
             with st.container(border=True):
                 st.write("新しいルームを作成して共有")
+                # 管理者設定のURLをデフォルト値として使用
+                default_url = st.session_state.admin_urls.get(exam_name, "")
                 url_input = st.text_input(
                     "通話ルームURLを入力",
-                    value="",
+                    value=default_url,
                     placeholder="https://...",
                     key=f"url_{exam_name}"
                 )
