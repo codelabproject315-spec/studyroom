@@ -6,6 +6,8 @@
 import streamlit as st
 from datetime import datetime, timedelta
 import time
+import boto3
+from boto3.dynamodb.conditions import Key
 
 # ─────────────────────────────────────────────
 # ページ設定
@@ -140,6 +142,25 @@ st.markdown("""
 
 
 # ─────────────────────────────────────────────
+# AWS / DynamoDB 設定
+# ─────────────────────────────────────────────
+def get_db_table():
+    """DynamoDBテーブルリソースを取得"""
+    try:
+        session = boto3.Session(
+            aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
+            region_name=st.secrets["AWS_REGION"]
+        )
+        dynamodb = session.resource('dynamodb')
+        return dynamodb.Table('StudyConnect_Rooms')
+    except Exception as e:
+        st.error(f"AWS接続に失敗しました。Secretsを確認してください。: {e}")
+        return None
+
+table = get_db_table()
+
+# ─────────────────────────────────────────────
 # モックデータ（後でSupabaseなどに差し替え可能）
 # ─────────────────────────────────────────────
 EXAMS_DEFAULT = {
@@ -166,7 +187,6 @@ EXAMS_DEFAULT = {
 def init_state():
     """セッション状態の初期化"""
     if "rooms" not in st.session_state:
-        # rooms[exam_name] = {"url": str, "participants": list, "created_at": datetime, "host": str}
         st.session_state.rooms = {}
 
     if "my_name" not in st.session_state:
@@ -185,6 +205,44 @@ def init_state():
     if "last_refresh" not in st.session_state:
         st.session_state.last_refresh = datetime.now()
 
+    # AWSから最新データをロード
+    load_from_aws()
+
+def load_from_aws():
+    """AWSから管理者URL、カスタム検定、ルーム情報をロード"""
+    if table:
+        try:
+            # 管理者URLとカスタム検定のロード
+            response = table.get_item(Key={'item_id': 'config_master'})
+            if 'Item' in response:
+                st.session_state.admin_urls = response['Item'].get('admin_urls', st.session_state.admin_urls)
+                st.session_state.custom_exams = response['Item'].get('custom_exams', {})
+
+            # アクティブルームのロード
+            rooms_response = table.scan()
+            new_rooms = {}
+            for item in rooms_response.get('Items', []):
+                if item['item_id'].startswith('room_'):
+                    exam_name = item['item_id'].replace('room_', '')
+                    new_rooms[exam_name] = {
+                        "url": item['url'],
+                        "participants": item['participants'],
+                        "created_at": datetime.fromisoformat(item['created_at']),
+                        "host": item['host']
+                    }
+            st.session_state.rooms = new_rooms
+        except Exception as e:
+            st.error(f"データロードエラー: {e}")
+
+def save_config_to_aws():
+    """管理者設定とカスタム検定をAWSに保存"""
+    if table:
+        table.put_item(Item={
+            'item_id': 'config_master',
+            'admin_urls': st.session_state.admin_urls,
+            'custom_exams': st.session_state.custom_exams
+        })
+
 def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
@@ -192,7 +250,7 @@ def get_room(exam_name):
     return st.session_state.rooms.get(exam_name)
 
 def create_or_join_room(exam_name, url, user_name):
-    """ルームに参加（なければ作成）"""
+    """ルームに参加（なければ作成）し、AWSに保存"""
     if exam_name not in st.session_state.rooms:
         st.session_state.rooms[exam_name] = {
             "url": url,
@@ -200,9 +258,21 @@ def create_or_join_room(exam_name, url, user_name):
             "created_at": datetime.now(),
             "host": user_name
         }
+    
     room = st.session_state.rooms[exam_name]
     if user_name and user_name not in room["participants"]:
         room["participants"].append(user_name)
+    
+    # AWSにルーム情報を同期
+    if table:
+        table.put_item(Item={
+            'item_id': f'room_{exam_name}',
+            'url': url,
+            'participants': room["participants"],
+            'created_at': room["created_at"].isoformat(),
+            'host': room["host"]
+        })
+    
     st.session_state.my_rooms.add(exam_name)
 
 def leave_room(exam_name, user_name):
@@ -211,9 +281,22 @@ def leave_room(exam_name, user_name):
         room = st.session_state.rooms[exam_name]
         if user_name in room["participants"]:
             room["participants"].remove(user_name)
-        # 参加者がいなくなったらルームを削除
-        if len(room["participants"]) == 0:
-            del st.session_state.rooms[exam_name]
+        
+        if table:
+            if len(room["participants"]) == 0:
+                # 参加者がいなくなったらDBから削除
+                table.delete_item(Key={'item_id': f'room_{exam_name}'})
+                del st.session_state.rooms[exam_name]
+            else:
+                # 参加者リストを更新して保存
+                table.put_item(Item={
+                    'item_id': f'room_{exam_name}',
+                    'url': room['url'],
+                    'participants': room["participants"],
+                    'created_at': room["created_at"].isoformat(),
+                    'host': room["host"]
+                })
+                
     st.session_state.my_rooms.discard(exam_name)
 
 def is_url_valid(url):
@@ -270,32 +353,30 @@ with st.sidebar:
                     "color": "#a29bfe",
                     "admin_url": ""
                 }
+                save_config_to_aws() # AWSに保存
                 st.success(f"「{new_exam_name}」を追加しました！")
                 st.rerun()
 
     st.divider()
 
-# 管理者設定
+    # 管理者設定
     st.markdown("### ⚙️ 管理者設定")
     with st.expander("デフォルトURLを設定（管理者用）"):
         all_exams = get_all_exams()
-        # 1. 入力フィールドを表示（keyを個別に割り当てて値を保持させる）
         for exam_name in all_exams:
             st.text_input(
                 f"{all_exams[exam_name]['icon']} {exam_name}",
                 value=st.session_state.admin_urls.get(exam_name, ""),
                 placeholder="https://discord.gg/xxxxx",
-                key=f"input_admin_{exam_name}"  # 入力値保持用の一時キー
+                key=f"input_admin_{exam_name}"
             )
-        
-        # 2. 保存ボタンが押された時に、一時キーの値を辞書へ一括コピーする
         if st.button("設定を保存", use_container_width=True):
             for exam_name in all_exams:
-                # session_state[一時キー] から辞書へ代入
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
-            
-            st.success("設定を保存しました！")
-            st.rerun()  # 画面を強制更新して、メインエリアのURL表示を最新にする
+            save_config_to_aws() # AWSに保存
+            st.success("保存しました！")
+            st.rerun()
+
     st.divider()
 
     # 自動リフレッシュ
@@ -462,6 +543,6 @@ st.divider()
 st.markdown("""
 <div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">
     📚 StudyConnect ─ 一緒に学べば、もっと頑張れる<br>
-    <small>※ URLデータはセッション内のみ保持されます。永続化にはSupabase等のDBとの連携をお勧めします。</small>
+    <small>※ データはAWS DynamoDBに永続化されています。アプリを更新しても設定は保持されます。</small>
 </div>
 """, unsafe_allow_html=True)
