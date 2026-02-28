@@ -6,8 +6,8 @@
 import streamlit as st
 from datetime import datetime, timedelta
 import time
-import boto3  # 追加
-from boto3.dynamodb.conditions import Key  # 追加
+import boto3
+from boto3.dynamodb.conditions import Key
 
 # ─────────────────────────────────────────────
 # ページ設定
@@ -92,35 +92,6 @@ st.markdown("""
         background: #b2bec3;
     }
 
-    .join-btn {
-        width: 100%;
-    }
-
-    .status-dot {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 6px;
-    }
-    .status-dot.online { background: #00b894; }
-    .status-dot.offline { background: #b2bec3; }
-
-    .sidebar-section {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        margin: 0.5rem 0;
-    }
     .alert-info {
         background: #d1ecf1;
         color: #0c5460;
@@ -130,18 +101,12 @@ st.markdown("""
         margin: 0.5rem 0;
     }
 
-    .divider {
-        border: none;
-        border-top: 1px solid #eee;
-        margin: 1.5rem 0;
-    }
-
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# AWS / DynamoDB 設定（追加）
+# AWS / DynamoDB 設定
 # ─────────────────────────────────────────────
 def get_db_table():
     try:
@@ -191,21 +156,19 @@ def save_config_to_aws():
 # データ初期化
 # ─────────────────────────────────────────────
 EXAMS_DEFAULT = {
-    "G検定": {"icon": "🤖", "description": "AIの基礎知識・理論", "color": "#6c63ff", "admin_url": ""},
-    "E資格": {"icon": "⚡", "description": "ディープラーニング実装", "color": "#e17055", "admin_url": ""},
-    "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用", "color": "#fd9644", "admin_url": ""},
+    "G検定": {"icon": "🤖", "description": "AIの基礎知識・理論", "color": "#6c63ff"},
+    "E資格": {"icon": "⚡", "description": "ディープラーニング実装", "color": "#e17055"},
+    "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用", "color": "#fd9644"},
 }
 
 def init_state():
-    """セッション状態の初期化"""
     if "rooms" not in st.session_state: st.session_state.rooms = {}
     if "my_name" not in st.session_state: st.session_state.my_name = ""
     if "my_rooms" not in st.session_state: st.session_state.my_rooms = set()
     if "custom_exams" not in st.session_state: st.session_state.custom_exams = {}
     if "admin_urls" not in st.session_state:
-        st.session_state.admin_urls = {k: v["admin_url"] for k, v in EXAMS_DEFAULT.items()}
+        st.session_state.admin_urls = {k: "" for k in EXAMS_DEFAULT.keys()}
     if "last_refresh" not in st.session_state: st.session_state.last_refresh = datetime.now()
-    
     if "db_loaded" not in st.session_state:
         load_from_aws()
         st.session_state.db_loaded = True
@@ -213,11 +176,7 @@ def init_state():
 def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
-def get_room(exam_name):
-    return st.session_state.rooms.get(exam_name)
-
 def create_or_join_room(exam_name, url, user_name):
-    """ルームに参加（なければ作成）"""
     if exam_name not in st.session_state.rooms:
         st.session_state.rooms[exam_name] = {
             "url": url, "participants": [], "created_at": datetime.now(), "host": user_name
@@ -225,8 +184,6 @@ def create_or_join_room(exam_name, url, user_name):
     room = st.session_state.rooms[exam_name]
     if user_name and user_name not in room["participants"]:
         room["participants"].append(user_name)
-    
-    # AWS同期
     if table:
         table.put_item(Item={
             'item_id': f'room_{exam_name}',
@@ -238,7 +195,6 @@ def create_or_join_room(exam_name, url, user_name):
     st.session_state.my_rooms.add(exam_name)
 
 def leave_room(exam_name, user_name):
-    """ルームを退出"""
     if exam_name in st.session_state.rooms:
         room = st.session_state.rooms[exam_name]
         if user_name in room["participants"]: room["participants"].remove(user_name)
@@ -257,79 +213,62 @@ def is_url_valid(url):
     return url.startswith("http://") or url.startswith("https://")
 
 # ─────────────────────────────────────────────
-# メインアプリ
+# メイン
 # ─────────────────────────────────────────────
 init_state()
 
-# ヘッダー
-st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>同じ検定を目指す仲間と、今すぐ一緒に学ぼう</p></div>""", unsafe_allow_html=True)
+st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>仲間と繋がる学習ルーム共有</p></div>""", unsafe_allow_html=True)
 st.divider()
 
-# ─────────────────────────────────────────────
-# サイドバー
-# ─────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### 👤 あなたの名前")
-    name_input = st.text_input("ニックネーム（任意）", value=st.session_state.my_name, placeholder="例: たろう", label_visibility="collapsed")
+    name_input = st.text_input("ニックネーム", value=st.session_state.my_name, placeholder="例: たろう", label_visibility="collapsed")
     if name_input != st.session_state.my_name: st.session_state.my_name = name_input
-
+    
     st.divider()
-
-    # 検定を追加
     st.markdown("### ➕ 検定を追加")
     with st.expander("カスタム検定を追加"):
-        new_exam_name = st.text_input("検定名", placeholder="例: 統計検定2級")
+        new_exam_name = st.text_input("検定名")
         new_exam_icon = st.selectbox("アイコン", ["📊", "💻", "📝", "🔬", "💡", "🎯", "🏆", "📐"])
         if st.button("追加する", type="primary", use_container_width=True):
             if new_exam_name:
-                st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定", "color": "#a29bfe", "admin_url": ""}
+                st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定", "color": "#a29bfe"}
                 if new_exam_name not in st.session_state.admin_urls:
                     st.session_state.admin_urls[new_exam_name] = ""
-                save_config_to_aws()
-                st.rerun()
+                save_config_to_aws(); st.rerun()
 
     st.divider()
-
-    # 管理者設定
     st.markdown("### ⚙️ 管理者設定")
-    with st.expander("デフォルトURLを設定（管理者用）"):
+    with st.expander("デフォルトURLを設定"):
         all_exams = get_all_exams()
         for exam_name in all_exams:
             st.text_input(f"{all_exams[exam_name]['icon']} {exam_name}", value=st.session_state.admin_urls.get(exam_name, ""), key=f"input_admin_{exam_name}")
         if st.button("設定を保存", use_container_width=True):
             for exam_name in all_exams:
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
-            save_config_to_aws()
-            st.success("保存しました！")
-            st.rerun()
+            save_config_to_aws(); st.success("AWSに保存しました！"); st.rerun()
 
     st.divider()
-
-    # 自動リフレッシュ
     auto_refresh = st.toggle("🔄 自動更新（30秒）", value=False)
     if auto_refresh:
         elapsed = (datetime.now() - st.session_state.last_refresh).seconds
         if elapsed >= 30:
-            st.session_state.last_refresh = datetime.now()
-            st.rerun()
-        time.sleep(1)
-        st.rerun()
-
-    if st.button("今すぐ更新", use_container_width=True): st.rerun()
+            st.session_state.last_refresh = datetime.now(); st.rerun()
+        time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# メインコンテンツ
+# コンテンツ表示
 # ─────────────────────────────────────────────
-# 最新の参加者状況をDBからロード
 load_from_aws()
 all_exams = get_all_exams()
 
-# ★ 常に最上部に表示される「自習室」エリア
+# ★ 修正ポイント：常に最上部に表示される「常設ルーム」
 st.markdown("### 🟢 常設ルーム（今すぐ参加）")
 for exam_name, exam in all_exams.items():
     default_url = st.session_state.admin_urls.get(exam_name, "")
     if not default_url: continue 
 
+    # DBから参加状況を取得（なければ空）
     room = st.session_state.rooms.get(exam_name)
     participant_count = len(room["participants"]) if room else 0
     is_joined = exam_name in st.session_state.my_rooms
@@ -347,37 +286,40 @@ for exam_name, exam in all_exams.items():
         with cols[0]:
             if room and room["participants"]:
                 st.caption(f"👋 参加中: {', '.join(room['participants'][:5])}")
-            st.caption(f"📌 デフォルトURL設定済み")
+            st.caption(f"📌 固定URL設定済み")
         with cols[1]:
+            # ここで「参加する」ボタンが常に出るように修正
             if is_joined:
                 if st.button("退出する", key=f"top_leave_{exam_name}", type="secondary", use_container_width=True):
                     leave_room(exam_name, st.session_state.my_name); st.rerun()
             else:
                 if st.link_button("参加する🚀", default_url, type="primary", use_container_width=True):
+                    # 裏でDBの参加人数を更新
                     create_or_join_room(exam_name, default_url, st.session_state.my_name)
 
 st.divider()
 
-# 検定一覧エリア
+# 検定一覧エリア（管理用）
 st.markdown("### 📋 検定一覧 ─ ルームの作成・個別設定")
 exam_list = list(all_exams.items())
 for i in range(0, len(exam_list), 2):
     cols = st.columns(2)
     for col, (exam_name, exam) in zip(cols, exam_list[i:i+2]):
         with col:
-            room = st.session_state.rooms.get(exam_name)
+            room_data = st.session_state.rooms.get(exam_name)
+            is_active = room_data is not None
             st.markdown(f"""
             <div class="exam-card">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
                     <div><span style="font-size:1.8rem;">{exam['icon']}</span><strong style="display:block; font-size:1.1rem; color:#1a1a2e; margin-top:0.2rem;">{exam_name}</strong><small style="color:#888;">{exam['description']}</small></div>
-                    <span class="participants-badge {'empty' if not room else ''}">👥 {len(room['participants']) if room else 0}人</span>
+                    <span class="participants-badge {'empty' if not is_active else ''}">👥 {len(room_data['participants']) if is_active else 0}人</span>
                 </div>
             </div>""", unsafe_allow_html=True)
 
             with st.expander(f"📢 別のURLでルームを作成"):
                 default_url = st.session_state.admin_urls.get(exam_name, "")
                 if default_url:
-                    st.markdown(f"<div class='alert-info'><b>固定URL:</b> {default_url}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='alert-info'><b>現在の固定URL:</b> {default_url}</div>", unsafe_allow_html=True)
                 
                 url_to_use = st.text_input("通話ルームURLを入力", placeholder="https://...", key=f"url_input_{exam_name}")
                 if st.button(f"✅ 反映して開始", key=f"create_{exam_name}", type="primary", use_container_width=True):
