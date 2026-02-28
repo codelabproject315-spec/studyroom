@@ -13,7 +13,7 @@ from boto3.dynamodb.conditions import Key
 # ─────────────────────────────────────────────
 # 1. Google 認証設定 (Secretsの[google_auth]を使用)
 # ─────────────────────────────────────────────
-# TypeError回避のため、ファイルを介さずSecretsの値を直接個別の引数に割り当てます
+# TypeError回避のため、引数名を 'secret_key' に修正しました
 google_conf = st.secrets["google_auth"]
 
 authenticate = Authenticate(
@@ -21,7 +21,7 @@ authenticate = Authenticate(
     client_secret=google_conf['client_secret'],
     redirect_uri=google_conf['redirect_uris'][0],
     cookie_name='study_connect_cookie',
-    key='some_signature_key',
+    secret_key='some_signature_key',  # 'key' から 'secret_key' に変更
     cookie_expiry_days=30
 )
 
@@ -159,7 +159,6 @@ def is_url_valid(url):
 # 5. サイドバー
 # ─────────────────────────────────────────────
 with st.sidebar:
-    # Googleのプロフィール画像を表示
     st.image(user_info.get('picture', ''), width=70)
     st.success(f"ログイン中: {login_user_name} さん")
     
@@ -221,7 +220,7 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
-                    # key引数を削除してTypeErrorを防止
+                    # key引数を削除してTypeErrorを回避
                     st.link_button("通話に参加する🚀", room['url'], type="primary", use_container_width=True)
                     st.divider()
 
@@ -232,7 +231,6 @@ for idx, exam_name in enumerate(exam_names):
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
-                        # ニックネーム入力欄を廃止し、ログイン中の名前をホストとして保存
                         create_new_room(exam_name, url_input, login_user_name)
                         st.balloons(); st.rerun()
                     else:
