@@ -187,6 +187,7 @@ def join_existing_room(room_id, user_name):
                 participants.append(user_name)
                 table.put_item(Item={**item, 'participants': participants})
     st.session_state.my_rooms.add(room_id)
+    st.rerun() # リフレッシュして参加済み状態にする
 
 def leave_room(room_id, user_name):
     """ルームを退出"""
@@ -252,7 +253,7 @@ with st.sidebar:
         time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# コンテンツ表示（タブ形式）
+# コンテンツ表示
 # ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
@@ -289,11 +290,13 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            # 参加ボタンにもルーム固有のキーを設定
-                            if st.link_button("参加する🚀", room['url'], key=f"join_btn_{room['id']}", type="primary", use_container_width=True):
+                            # ★修正箇所: st.link_button は if で囲まず単独で配置
+                            st.link_button("参加する🚀", room['url'], key=f"lnk_{room['id']}", type="primary", use_container_width=True)
+                            
+                            # 裏側で参加人数を更新するための通常ボタンを配置
+                            if st.button("参加者として登録👥", key=f"join_reg_{room['id']}", use_container_width=True):
                                 join_existing_room(room['id'], st.session_state.my_name)
                         else:
-                            # ★修正箇所: keyを追加して重複エラーを回避
                             st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
                     with c2:
                         if is_joined:
@@ -306,9 +309,7 @@ for idx, exam_name in enumerate(exam_names):
             st.markdown("#### 🏰 ルームを追加")
             with st.container(border=True):
                 st.write("新しいルームを作成して共有")
-                
                 url_input = st.text_input("通話ルームURLを入力", value="", placeholder="https://...", key=f"url_{exam_name}")
-                
                 if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
                     if is_url_valid(url_input):
                         create_new_room(exam_name, url_input, st.session_state.my_name)
