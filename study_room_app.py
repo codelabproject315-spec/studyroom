@@ -297,7 +297,7 @@ with st.sidebar:
 
     st.divider()
 
-    # 管理者設定（★ここを修正済み）
+    # 管理者設定
     st.markdown("### ⚙️ 管理者設定")
     with st.expander("デフォルトURLを設定（管理者用）"):
         all_exams = get_all_exams()
@@ -335,13 +335,8 @@ with st.sidebar:
 # ─────────────────────────────────────────────
 # メインコンテンツ
 # ─────────────────────────────────────────────
-load_from_aws() 
-
-all_exams = get_all_exams()
-
-# アクティブなルームがあれば上部に表示
-active_rooms = [(name, st.session_state.rooms[name]) for name in all_exams if name in st.session_state.rooms]
-# --- 以下、既存の表示処理 ---
+# ★追加: 最新の参加者状況をDBからロード
+load_from_aws()
 
 all_exams = get_all_exams()
 active_rooms = [(name, st.session_state.rooms[name]) for name in all_exams if name in st.session_state.rooms]
@@ -375,8 +370,9 @@ if active_rooms:
                     if st.button("退出する", key=f"leave_{exam_name}", type="secondary", use_container_width=True):
                         leave_room(exam_name, st.session_state.my_name); st.rerun()
                 else:
-                    if st.button("参加する🚀", key=f"join_active_{exam_name}", type="primary", use_container_width=True):
-                        create_or_join_room(exam_name, room["url"], st.session_state.my_name); st.rerun()
+                    # ★修正: st.link_button に変更。クリックでAWSへ参加者登録しつつURLへ遷移
+                    if st.link_button("参加する🚀", room['url'], type="primary", use_container_width=True):
+                        create_or_join_room(exam_name, room["url"], st.session_state.my_name)
     st.divider()
 
 st.markdown("### 📋 検定一覧 ─ 「今からやる」ボタンでルームを作成")
@@ -404,8 +400,9 @@ for i in range(0, len(exam_list), cols_per_row):
             """, unsafe_allow_html=True)
 
             if is_active and not is_joined:
-                if st.button(f"🚀 ルームに参加する", key=f"join_{exam_name}", type="primary", use_container_width=True):
-                    create_or_join_room(exam_name, room["url"], st.session_state.my_name); st.rerun()
+                # ★修正: st.link_button に変更
+                if st.link_button(f"🚀 ルームに参加する", room['url'], type="primary", use_container_width=True):
+                    create_or_join_room(exam_name, room["url"], st.session_state.my_name)
             elif is_active and is_joined:
                 st.markdown(f"<div class='alert-success'>✅ 参加中のルームです</div>", unsafe_allow_html=True)
                 if st.button(f"退出する", key=f"leave2_{exam_name}", type="secondary", use_container_width=True):
