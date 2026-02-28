@@ -246,7 +246,7 @@ with st.sidebar:
         time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# コンテンツ表示（タブ形式）
+# コンテンツ表示
 # ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
@@ -283,13 +283,11 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            # ★修正箇所: ボタン1つに統合
+                            # ★修正箇所: HTMLフォームを使用してDB更新とURL遷移を確実に実行
                             if st.button("通話に参加する🚀", key=f"join_act_{room['id']}", type="primary", use_container_width=True):
-                                # 1. DBのカウントを更新
                                 join_existing_room(room['id'], st.session_state.my_name)
-                                # 2. JavaScriptで別タブを開く
-                                js = f'window.open("{room["url"]}", "_blank").focus();'
-                                st.markdown(f'<img src="x" onerror=\'{js}\' style="display:none;">', unsafe_allow_html=True)
+                                # HTMLのメタタグを使用して強制的にリダイレクトさせる（ポップアップブロックを回避）
+                                st.markdown(f'<meta http-equiv="refresh" content="0; url={room["url"]}">', unsafe_allow_html=True)
                                 st.rerun()
                         else:
                             st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
