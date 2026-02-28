@@ -111,17 +111,24 @@ def load_from_aws():
             if 'Item' in resp:
                 st.session_state.admin_urls = resp['Item'].get('admin_urls', st.session_state.admin_urls)
                 st.session_state.custom_exams = resp['Item'].get('custom_exams', {})
+            
             items = table.scan().get('Items', [])
             new_rooms = {}
             for item in items:
                 if item['item_id'].startswith('room_'):
-                    exam_name = item['item_id'].replace('room_', '')
-                    new_rooms[exam_name] = {
+                    # キーを "room_G検定_12345" の形式からパース
+                    parts = item['item_id'].split('_')
+                    exam_name = parts[1]
+                    if exam_name not in new_rooms:
+                        new_rooms[exam_name] = []
+                    
+                    new_rooms[exam_name].append({
+                        "id": item['item_id'],
                         "url": item['url'],
                         "participants": item['participants'],
                         "created_at": datetime.fromisoformat(item['created_at']),
                         "host": item['host']
-                    }
+                    })
             st.session_state.rooms = new_rooms
         except: pass
 
@@ -157,38 +164,46 @@ def init_state():
 def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
-def create_or_join_room(exam_name, url, user_name):
-    if exam_name not in st.session_state.rooms:
-        st.session_state.rooms[exam_name] = {
-            "url": url, "participants": [], "created_at": datetime.now(), "host": user_name
-        }
-    room = st.session_state.rooms[exam_name]
-    if user_name and user_name not in room["participants"]:
-        room["participants"].append(user_name)
+def create_new_room(exam_name, url, user_name):
+    """新しいルームを追加"""
+    room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         table.put_item(Item={
-            'item_id': f'room_{exam_name}',
+            'item_id': room_id,
             'url': url,
-            'participants': room["participants"],
-            'created_at': room["created_at"].isoformat(),
-            'host': room["host"]
+            'participants': [user_name] if user_name else ["匿名"],
+            'created_at': datetime.now().isoformat(),
+            'host': user_name if user_name else "匿名"
         })
-    st.session_state.my_rooms.add(exam_name)
+    st.session_state.my_rooms.add(room_id)
 
-def leave_room(exam_name, user_name):
-    if exam_name in st.session_state.rooms:
-        room = st.session_state.rooms[exam_name]
-        if user_name in room["participants"]: room["participants"].remove(user_name)
-        if table:
-            if not room["participants"]:
-                table.delete_item(Key={'item_id': f'room_{exam_name}'})
-                del st.session_state.rooms[exam_name]
+def join_existing_room(room_id, user_name):
+    """既存のルームに参加"""
+    if table:
+        resp = table.get_item(Key={'item_id': room_id})
+        if 'Item' in resp:
+            item = resp['Item']
+            participants = item.get('participants', [])
+            if user_name and user_name not in participants:
+                participants.append(user_name)
+                table.put_item(Item={**item, 'participants': participants})
+    st.session_state.my_rooms.add(room_id)
+
+def leave_room(room_id, user_name):
+    """ルームを退出"""
+    if table:
+        resp = table.get_item(Key={'item_id': room_id})
+        if 'Item' in resp:
+            item = resp['Item']
+            participants = item.get('participants', [])
+            if user_name in participants:
+                participants.remove(user_name)
+            
+            if not participants:
+                table.delete_item(Key={'item_id': room_id})
             else:
-                table.put_item(Item={
-                    'item_id': f'room_{exam_name}', 'url': room['url'],
-                    'participants': room["participants"], 'created_at': room["created_at"].isoformat(), 'host': room["host"]
-                })
-    st.session_state.my_rooms.discard(exam_name)
+                table.put_item(Item={**item, 'participants': participants})
+    st.session_state.my_rooms.discard(room_id)
 
 def is_url_valid(url):
     return url.startswith("http://") or url.startswith("https://")
@@ -221,10 +236,9 @@ with st.sidebar:
     st.divider()
     st.markdown("### ⚙️ 管理者設定")
     with st.expander("デフォルトURLを設定"):
-        st.caption("カンマ（,）区切りで複数のURLを追加できます")
         all_exams = get_all_exams()
         for exam_name in all_exams:
-            st.text_area(f"{all_exams[exam_name]['icon']} {exam_name}", value=st.session_state.admin_urls.get(exam_name, ""), key=f"input_admin_{exam_name}", help="例: https://zoom_a, https://zoom_b")
+            st.text_input(f"{all_exams[exam_name]['icon']} {exam_name}", value=st.session_state.admin_urls.get(exam_name, ""), key=f"input_admin_{exam_name}")
         if st.button("設定を保存", use_container_width=True):
             for exam_name in all_exams:
                 st.session_state.admin_urls[exam_name] = st.session_state[f"input_admin_{exam_name}"]
@@ -250,65 +264,58 @@ tabs = st.tabs([f"{all_exams[name]['icon']} {name}" for name in exam_names])
 for idx, exam_name in enumerate(exam_names):
     with tabs[idx]:
         exam = all_exams[exam_name]
-        room = st.session_state.rooms.get(exam_name)
-        participant_count = len(room["participants"]) if room else 0
-        is_joined = exam_name in st.session_state.my_rooms
+        rooms_list = st.session_state.rooms.get(exam_name, [])
+        default_url = st.session_state.admin_urls.get(exam_name, "")
 
         col_left, col_right = st.columns([2, 1])
         
         with col_left:
-            st.markdown(f"### {exam['icon']} {exam_name} 常設ルーム")
-            st.markdown(f"""
-            <div class="exam-card active">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="font-size:1.2rem;">🟢 現在のルーム状況</strong>
-                    <span class="participants-badge">👥 {participant_count}人が参加中</span>
-                </div>
-                <div class="room-url-box">
-                    <p style="margin-bottom:0.5rem; opacity:0.9; font-size:0.9rem;">🔗 通話ルームURL</p>
-                    <a href="{room['url'] if room else '#'}" target="_blank">{room['url'] if room else 'ルームが未設定です。右側から追加してください。'}</a>
-                </div>
-            </div>""", unsafe_allow_html=True)
+            st.markdown(f"### 🟢 {exam_name} のルーム一覧")
             
-            c1, c2 = st.columns(2)
-            with c1:
-                if room:
-                    if st.link_button("参加する🚀", room['url'], type="primary", use_container_width=True):
-                        create_or_join_room(exam_name, room['url'], st.session_state.my_name)
-                else:
-                    st.button("参加する🚀", disabled=True, use_container_width=True)
-            with c2:
-                if is_joined:
-                    if st.button("退出する", key=f"leave_{exam_name}", type="secondary", use_container_width=True):
-                        leave_room(exam_name, st.session_state.my_name); st.rerun()
+            if not rooms_list:
+                st.info("現在アクティブなルームはありません。右側から新しいルームを追加してください。")
+            else:
+                for room in rooms_list:
+                    is_joined = room['id'] in st.session_state.my_rooms
+                    st.markdown(f"""
+                    <div class="exam-card {'active' if is_joined else ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong style="font-size:1.1rem;">👋 {room['host']} のルーム</strong>
+                            <span class="participants-badge">👥 {len(room['participants'])}人が参加中</span>
+                        </div>
+                        <div class="room-url-box">
+                            <a href="{room['url']}" target="_blank">{room['url']}</a>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        if not is_joined:
+                            if st.link_button("参加する🚀", room['url'], type="primary", use_container_width=True):
+                                join_existing_room(room['id'], st.session_state.my_name)
+                        else:
+                            st.button("参加中 ✅", disabled=True, use_container_width=True)
+                    with c2:
+                        if is_joined:
+                            if st.button("退出する", key=f"leave_{room['id']}", type="secondary", use_container_width=True):
+                                leave_room(room['id'], st.session_state.my_name); st.rerun()
+                    st.caption(f"参加メンバー: {', '.join(room['participants'])}")
+                    st.divider()
 
         with col_right:
-            st.markdown("#### 🏰 ルームを管理")
+            st.markdown("#### 🏰 ルームを追加")
             with st.container(border=True):
-                st.write("別のURLで反映・作成")
+                st.write("新しいルームを作成して共有")
                 
-                # 管理者設定のURLをリスト化（追加可能にするロジック）
-                raw_urls = st.session_state.admin_urls.get(exam_name, "")
-                admin_url_list = [u.strip() for u in raw_urls.split(",") if u.strip()]
+                # デフォルトURLを初期値として表示
+                url_input = st.text_input("通話ルームURLを入力", value=default_url, key=f"url_{exam_name}")
                 
-                # 選択肢の作成
-                options = admin_url_list + ["＋ 新しいURLを手動入力"]
-                selected_url = st.selectbox("登録済みURLから選択", options, key=f"select_{exam_name}")
-                
-                if selected_url == "＋ 新しいURLを手動入力":
-                    final_url = st.text_input("通話ルームURLを入力", placeholder="https://...", key=f"manual_{exam_name}")
-                else:
-                    final_url = selected_url
-                
-                if st.button(f"✅ 設定を反映", key=f"create_{exam_name}", type="primary", use_container_width=True):
-                    if is_url_valid(final_url):
-                        create_or_join_room(exam_name, final_url, st.session_state.my_name); st.rerun()
+                if st.button(f"✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                    if is_url_valid(url_input):
+                        create_new_room(exam_name, url_input, st.session_state.my_name)
+                        st.balloons(); st.rerun()
                     else:
-                        st.error("有効なURLを選択または入力してください")
-
-        if room and room["participants"]:
-            st.divider()
-            st.caption(f"👋 学習中のメンバー: {', '.join(room['participants'])}")
+                        st.error("有効なURLを入力してください")
 
 st.divider()
-st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ カテゴリーを切り替えて仲間を探そう</div>""", unsafe_allow_html=True)
+st.markdown("""<div style="text-align:center; color:#aaa; font-size:0.85rem; padding:1rem 0;">📚 StudyConnect ─ 閲覧者が自由にルームを追加・共有できます</div>""", unsafe_allow_html=True)
