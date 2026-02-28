@@ -32,6 +32,34 @@ st.markdown("""
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
         color: #e8e8f0;
     }
+    /* Streamlitデフォルト白背景を強制上書き */
+    .stMarkdown, .element-container, .stAlert,
+    div[data-testid="column"] > div,
+    section[data-testid="stSidebar"] + div {
+        background: transparent !important;
+    }
+    /* メインブロック */
+    .main .block-container {
+        background: transparent !important;
+        padding-top: 1rem !important;
+    }
+    /* ダーク入力欄 */
+    .stTextInput input, .stSelectbox > div > div {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: #e8e8f0 !important;
+        border-radius: 8px !important;
+    }
+    /* ダークボタン（セカンダリ） */
+    .stButton > button:not([kind="primary"]) {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: #e8e8f0 !important;
+        border-radius: 8px !important;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        background: rgba(255,255,255,0.15) !important;
+    }
     .stApp { background: #0f0f1a; }
 
     /* ── サイドバー全体 ── */
@@ -64,8 +92,8 @@ st.markdown("""
 
     /* ── ユーザーセクション ── */
     .user-section {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
         border-radius: 14px;
         padding: 1.1rem 1rem;
         margin-bottom: 0.8rem;
@@ -262,8 +290,8 @@ st.markdown("""
 
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
         border-radius: 12px;
         padding: 0.85rem 1.1rem;
         margin-bottom: 0.5rem;
