@@ -4,6 +4,35 @@
 """
 
 import streamlit as st
+from streamlit_google_auth import Authenticate
+
+# 1. 認証の設定
+# 実際には st.secrets から取得するように書き換えてください
+authenticate = Authenticate(
+    secret_path='client_secret.json', # GoogleからダウンロードしたJSON
+    cookie_name='study_connect_cookie',
+    cookie_key='some_signature_key',
+    cookie_expiry_days=30,
+)
+
+# 2. ログインチェック
+authenticate.check_authenticity()
+
+# ログインしていない場合
+if not st.session_state.get('connected'):
+    st.markdown("""<div class="main-header"><h1>📚 StudyConnect</h1><p>ログインして学習を始めよう</p></div>""", unsafe_allow_html=True)
+    authenticate.login()
+    st.stop()
+
+# ログイン済みの場合の処理
+user_info = st.session_state['user_info']
+st.sidebar.success(f"ログイン中: {user_info['name']} さん")
+if st.sidebar.button("ログアウト"):
+    authenticate.logout()
+
+# --- これ以降に既存のアプリコードを配置 ---
+
+import streamlit as st
 from datetime import datetime, timedelta
 import time
 import boto3
