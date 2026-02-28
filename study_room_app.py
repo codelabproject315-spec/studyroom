@@ -78,9 +78,6 @@ st.markdown("""
         font-size: 0.85rem;
         font-weight: 700;
     }
-    .participants-badge.empty {
-        background: #b2bec3;
-    }
 
     footer { visibility: hidden; }
 </style>
@@ -124,9 +121,9 @@ def load_from_aws():
                     new_rooms[exam_name].append({
                         "id": item['item_id'],
                         "url": item['url'],
-                        "participants": item['participants'],
+                        "participants": item.get('participants', []),
                         "created_at": datetime.fromisoformat(item['created_at']),
-                        "host": item['host']
+                        "host": item.get('host', '匿名')
                     })
             st.session_state.rooms = new_rooms
         except: pass
@@ -164,7 +161,6 @@ def get_all_exams():
     return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
 
 def create_new_room(exam_name, url, user_name):
-    """新しいルームを追加"""
     room_id = f"room_{exam_name}_{int(time.time())}"
     if table:
         table.put_item(Item={
@@ -177,7 +173,6 @@ def create_new_room(exam_name, url, user_name):
     st.session_state.my_rooms.add(room_id)
 
 def join_existing_room(room_id, user_name):
-    """既存のルームに参加"""
     if table:
         resp = table.get_item(Key={'item_id': room_id})
         if 'Item' in resp:
@@ -187,10 +182,8 @@ def join_existing_room(room_id, user_name):
                 participants.append(user_name)
                 table.put_item(Item={**item, 'participants': participants})
     st.session_state.my_rooms.add(room_id)
-    st.rerun() # リフレッシュして参加済み状態にする
 
 def leave_room(room_id, user_name):
-    """ルームを退出"""
     if table:
         resp = table.get_item(Key={'item_id': room_id})
         if 'Item' in resp:
@@ -253,7 +246,7 @@ with st.sidebar:
         time.sleep(1); st.rerun()
 
 # ─────────────────────────────────────────────
-# コンテンツ表示
+# コンテンツ表示（タブ形式）
 # ─────────────────────────────────────────────
 load_from_aws()
 all_exams = get_all_exams()
@@ -290,19 +283,21 @@ for idx, exam_name in enumerate(exam_names):
                     c1, c2 = st.columns(2)
                     with c1:
                         if not is_joined:
-                            # ★修正箇所: st.link_button は if で囲まず単独で配置
-                            st.link_button("参加する🚀", room['url'], key=f"lnk_{room['id']}", type="primary", use_container_width=True)
-                            
-                            # 裏側で参加人数を更新するための通常ボタンを配置
-                            if st.button("参加者として登録👥", key=f"join_reg_{room['id']}", use_container_width=True):
+                            # st.link_buttonからkeyを削除しTypeErrorを回避。
+                            # 参加登録を確実に行うため、説明文付きのボタンに変更。
+                            st.link_button("1. 通話に参加する🚀", room['url'], type="primary", use_container_width=True)
+                            if st.button("2. 参加者名簿に載る👥", key=f"join_db_{room['id']}", use_container_width=True):
                                 join_existing_room(room['id'], st.session_state.my_name)
+                                st.rerun()
                         else:
                             st.button("参加中 ✅", key=f"status_{room['id']}", disabled=True, use_container_width=True)
                     with c2:
                         if is_joined:
                             if st.button("退出する", key=f"leave_{room['id']}", type="secondary", use_container_width=True):
                                 leave_room(room['id'], st.session_state.my_name); st.rerun()
-                    st.caption(f"参加メンバー: {', '.join(room['participants'])}")
+                    
+                    if room['participants']:
+                        st.caption(f"参加メンバー: {', '.join(room['participants'])}")
                     st.divider()
 
         with col_right:
