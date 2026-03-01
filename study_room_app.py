@@ -440,7 +440,7 @@ st.markdown("""
     }
 
     /* ── テキスト全般をX風白に ── */
-    .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+    .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
         color: #e7e9ea !important;
     }
     label { color: #e7e9ea !important; }
