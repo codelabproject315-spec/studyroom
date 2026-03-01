@@ -287,32 +287,29 @@ st.markdown("""
     .stButton > button[data-testid="baseButton-primary"]:hover { opacity: 0.82 !important; }
 
     /* セカンダリ・通常ボタン：ダーク背景＋白文字 */
-    .stButton > button[kind="secondary"],
-    .stButton > button[data-testid="baseButton-secondary"],
     .stButton > button:not([kind="primary"]) {
         background: #16181c !important; color: #e7e9ea !important;
         border: 1px solid #2f3336 !important;
         border-radius: 10px !important; font-weight: 600 !important;
         transition: background 0.2s !important;
     }
-    .stButton > button[kind="secondary"]:hover,
     .stButton > button:not([kind="primary"]):hover {
         background: #1d1f23 !important; border-color: #71767b !important;
     }
-    /* disabledボタン（自分自身削除不可など） */
+    /* disabledボタン */
     .stButton > button:disabled {
         background: #0d0d0d !important; color: #71767b !important;
         border-color: #2f3336 !important; opacity: 0.5 !important;
     }
-    /* サイドバー内ボタンは半透明ダーク（上書き防止のため再宣言） */
-    [data-testid="stSidebar"] .stButton > button,
-    [data-testid="stSidebar"] .stButton > button:not([kind="primary"]) {
+    /* サイドバー内ボタン：半透明ダーク（expander内含む全て） */
+    [data-testid="stSidebar"] .stButton > button {
         background: rgba(255,255,255,0.08) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
         color: #e7e9ea !important;
+        border-radius: 10px !important;
+        font-size: 0.85rem !important;
     }
-    [data-testid="stSidebar"] .stButton > button:hover,
-    [data-testid="stSidebar"] .stButton > button:not([kind="primary"]):hover {
+    [data-testid="stSidebar"] .stButton > button:hover {
         background: rgba(255,255,255,0.15) !important;
     }
 
