@@ -1,5 +1,5 @@
 """
-StudyConnect - メール確認付き登録 + パスワードログイン版（UI全面刷新・サイドバー修正版）
+StudyConnect - メール確認付き登録 + パスワードログイン版（UI全面刷新）
 """
 
 import streamlit as st
@@ -32,7 +32,8 @@ st.markdown("""
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
     }
 
-    /* ── ブラウザUIツールバー類を非表示（サイドバーボタンは残す） ── */
+    /* ── ブラウザUIツールバー類を非表示（Streamlit埋め込みUI要素） ── */
+    header[data-testid="stHeader"] { display: none !important; }
     #MainMenu { display: none !important; }
     .stDeployButton { display: none !important; }
     [data-testid="stToolbar"] { display: none !important; }
@@ -40,20 +41,13 @@ st.markdown("""
     [data-testid="stStatusWidget"] { display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     ._profileContainer_gzau3_53 { display: none !important; }
+    [data-testid="baseButton-headerNoPadding"] { display: none !important; }
     .viewerBadge_container__r5tak { display: none !important; }
     .viewerBadge_link__qRIco { display: none !important; }
     button[title="View fullscreen"] { display: none !important; }
     button[title="Share"] { display: none !important; }
     button[aria-label="Share"] { display: none !important; }
     [data-testid="manage-app-button"] { display: none !important; }
-
-    /* サイドバーを開くボタンが含まれるヘッダーを透明化してボタンだけ残す */
-    header[data-testid="stHeader"] { 
-        background-color: rgba(0,0,0,0) !important; 
-        color: #e7e9ea !important;
-    }
-    
-    [data-testid="baseButton-headerNoPadding"] { display: flex !important; } /* ボタンを表示 */
     [data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
 
     /* ── X風 全体背景（真っ黒） ── */
@@ -69,8 +63,8 @@ st.markdown("""
     }
     [data-testid="stSidebar"] * { color: #e7e9ea !important; }
     [data-testid="stSidebar"] .stTextInput input {
-        background: rgba(255,255,255,0.06) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
+        background: #111111 !important;
+        border: 1px solid #2f3336 !important;
         color: #e7e9ea !important;
         border-radius: 8px !important;
     }
@@ -114,8 +108,8 @@ st.markdown("""
     }
     .ai-card {
         display: flex; align-items: center; gap: 0.8rem;
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.09) !important;
+        background: #0d0d0d !important;
+        border: 1px solid #2f3336 !important;
         border-radius: 12px; padding: 0.8rem 1rem;
         margin-bottom: 0.5rem; text-decoration: none !important;
         transition: background 0.2s, border-color 0.2s, transform 0.15s;
@@ -223,6 +217,72 @@ st.markdown("""
         margin-left: 0.5rem; vertical-align: middle;
     }
 
+    /* ── ログイン ── */
+    .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #e7e9ea; margin-bottom: 0.3rem; }
+    .login-subtitle { text-align: center; color: #71767b; font-size: 0.9rem; }
+    .otp-hint {
+        background: #0d1117; border: 1px solid #1d4ed8; border-radius: 10px;
+        padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.88rem;
+        color: #93c5fd; line-height: 1.55;
+    }
+    .step-badge {
+        display: inline-block; background: #2f3336; color: #e7e9ea;
+        border-radius: 20px; padding: 0.15rem 0.75rem; font-size: 0.72rem;
+        font-weight: 700; margin-bottom: 0.6rem; letter-spacing: 0.04em;
+    }
+
+    /* ── タブ ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #16181c; border-radius: 12px; padding: 4px; gap: 2px;
+        border: 1px solid #2f3336;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 9px !important; font-weight: 600 !important;
+        font-size: 0.84rem !important; padding: 0.4rem 1rem !important;
+        color: #71767b !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #e7e9ea !important; color: #000000 !important;
+    }
+
+    /* ── ボタン ── */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="baseButton-primary"] {
+        background: #e7e9ea !important; color: #000000 !important;
+        border: none !important;
+        border-radius: 10px !important; font-weight: 700 !important;
+        transition: opacity 0.2s !important;
+    }
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="baseButton-primary"]:hover { opacity: 0.82 !important; }
+
+    .stButton > button:not([kind="primary"]) {
+        background: #16181c !important; color: #e7e9ea !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 10px !important; font-weight: 600 !important;
+        transition: background 0.2s !important;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        background: #1d1f23 !important; border-color: #71767b !important;
+    }
+    .stButton > button:disabled {
+        background: #0d0d0d !important; color: #71767b !important;
+        border-color: #2f3336 !important; opacity: 0.5 !important;
+    }
+
+    /* サイドバー内ボタン */
+    [data-testid="stSidebar"] .stButton > button {
+        background: #1a1a1a !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 10px !important;
+        font-size: 0.85rem !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: #242424 !important;
+        border-color: #555555 !important;
+    }
+
     /* ── expander 共通（ダーク統一）── */
     [data-testid="stExpander"] {
         background: #16181c !important;
@@ -231,9 +291,22 @@ st.markdown("""
         overflow: hidden;
     }
     [data-testid="stExpander"] *,
+    [data-testid="stExpander"] > *,
     [data-testid="stExpander"] details,
-    [data-testid="stExpanderDetails"] {
+    [data-testid="stExpander"] details > *,
+    [data-testid="stExpander"] details > div,
+    [data-testid="stExpander"] details > summary,
+    [data-testid="stExpanderDetails"],
+    [data-testid="stExpanderDetails"] > *,
+    [data-testid="stExpanderDetails"] > div,
+    [data-testid="stExpanderDetails"] > div > *,
+    [data-testid="stExpanderDetails"] > div > div,
+    [data-testid="stExpanderDetails"] > div > div > * {
         background-color: #16181c !important;
+        color: #e7e9ea !important;
+    }
+    [data-testid="stExpander"] summary {
+        background: #16181c !important;
         color: #e7e9ea !important;
     }
 
@@ -243,51 +316,132 @@ st.markdown("""
         border: 1px solid #2f3336 !important;
         border-radius: 12px !important;
     }
-    [data-testid="stSidebar"] [data-testid="stExpander"] * {
+    [data-testid="stSidebar"] [data-testid="stExpander"] *,
+    [data-testid="stSidebar"] [data-testid="stExpander"] details,
+    [data-testid="stSidebar"] [data-testid="stExpander"] details > *,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"],
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > *,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div > div {
         background-color: #0d0d0d !important;
         color: #e8e8f0 !important;
     }
+    [data-testid="stSidebar"] [data-testid="stExpander"] input {
+        background: #111111 !important;
+        color: #e8e8f0 !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stSelectbox"] > div > div {
+        background: #111111 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
+        background: #1a1a1a !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
+        background: #242424 !important;
+        border-color: #555555 !important;
+    }
 
-    /* ── テキスト入力（全域ダーク）── */
+    /* ── テキスト入力・パスワード入力（全域ダーク）── */
     input, textarea {
         background: #000000 !important;
         color: #e7e9ea !important;
         border-color: #2f3336 !important;
     }
-    .stTextInput input, [data-testid="stTextInput"] input {
+    input::placeholder, textarea::placeholder {
+        color: #71767b !important;
+    }
+    .stTextInput input,
+    [data-testid="stTextInput"] input,
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
         background: #000000 !important;
         border: 1px solid #2f3336 !important;
         color: #e7e9ea !important;
         border-radius: 8px !important;
     }
+    .stTextInput input:focus,
+    [data-testid="stTextInput"] input:focus {
+        border-color: #1d9bf0 !important;
+        box-shadow: 0 0 0 2px rgba(29,155,240,0.2) !important;
+    }
+    [data-baseweb="input"],
+    [data-baseweb="base-input"],
+    [data-baseweb="input"] > div,
+    [data-baseweb="base-input"] > div {
+        background: #000000 !important;
+        border-color: #2f3336 !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="input"],
+    [data-testid="stSidebar"] [data-baseweb="base-input"],
+    [data-testid="stSidebar"] [data-baseweb="input"] > div,
+    [data-testid="stSidebar"] [data-baseweb="base-input"] > div,
+    [data-testid="stSidebar"] [data-testid="stTextInputRootElement"],
+    [data-testid="stSidebar"] [data-testid="stTextInputRootElement"] > div {
+        background: #0d0d0d !important;
+        border-color: #2f3336 !important;
+    }
 
-    /* ── ログイン ── */
-    .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #e7e9ea; margin-bottom: 0.3rem; }
-    .login-subtitle { text-align: center; color: #71767b; font-size: 0.9rem; }
+    /* ── Selectbox ダーク化 ── */
+    [data-testid="stSelectbox"] > div > div,
+    [data-testid="stSelectbox"] > div > div > div {
+        background: #000000 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSelectbox"] svg { fill: #e7e9ea !important; }
+    ul[data-testid="stSelectboxVirtualDropdown"] {
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
+    }
+    li[role="option"] {
+        background: #16181c !important;
+        color: #e7e9ea !important;
+    }
+    li[role="option"]:hover { background: #2f3336 !important; }
 
-    /* ── タブ ── */
-    .stTabs [data-baseweb="tab-list"] {
-        background: #16181c; border-radius: 12px; padding: 4px; gap: 2px;
+    /* ── メイン右カラム（ルーム追加パネル）── */
+    .add-panel-wrap {
+        background: #16181c;
         border: 1px solid #2f3336;
-    }
-    .stTabs [aria-selected="true"] {
-        background: #e7e9ea !important; color: #000000 !important;
-    }
-
-    /* ── ボタン ── */
-    .stButton > button[kind="primary"] {
-        background: #e7e9ea !important; color: #000000 !important;
-        border: none !important; border-radius: 10px !important; font-weight: 700 !important;
-    }
-    .stButton > button:not([kind="primary"]) {
-        background: #16181c !important; color: #e7e9ea !important;
-        border: 1px solid #2f3336 !important; border-radius: 10px !important;
+        border-radius: 16px;
+        padding: 1.4rem 1.5rem;
+        box-shadow: none;
     }
 
+    /* ── container border ── */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 14px !important;
+    }
+    [data-testid="stVerticalBlockBorderWrapper"] > div,
+    [data-testid="stVerticalBlockBorderWrapper"] > div > div {
+        background: #16181c !important;
+    }
+
+    /* ── テキスト全般をX風白に ── */
     .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
         color: #e7e9ea !important;
     }
     label { color: #e7e9ea !important; }
+    .stAlert { background: #16181c !important; border-color: #2f3336 !important; }
+
+    section[data-testid="stSidebar"] > div {
+        background: #000000 !important;
+    }
+
+    footer { visibility: hidden; display: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,7 +520,10 @@ def send_otp_email(email, code, purpose="メール確認"):
             smtp.login(GMAIL_ADDRESS, GMAIL_APP_PASS)
             smtp.sendmail(GMAIL_ADDRESS, email, msg.as_string())
         return True
-    except: return False
+    except smtplib.SMTPAuthenticationError:
+        st.error("Gmail認証エラー"); return False
+    except Exception as e:
+        st.error(f"メール送信エラー: {e}"); return False
 
 
 # ─────────────────────────────────────────────
@@ -443,47 +600,87 @@ def show_auth_page():
                 if st.button("ログイン", type="primary", use_container_width=True, key="li_btn"):
                     if not email or not password:
                         st.error("メールアドレスとパスワードを入力してください")
+                    elif not valid_email(email):
+                        st.error("有効なメールアドレスを入力してください")
                     else:
                         with st.spinner("認証中..."):
                             user = authenticate(norm_email(email), password)
                         if user:
                             st.session_state.update(authenticated=True, current_user=user, my_name=user['display_name'])
-                            st.rerun()
+                            st.success(f"ようこそ、{user['display_name']} さん！")
+                            time.sleep(0.5); st.rerun()
                         else:
-                            st.error("認証に失敗しました")
+                            st.error("メールアドレスまたはパスワードが正しくありません")
 
         with tab_reg:
             step = st.session_state.get("reg_step", 1)
+
             if step == 1:
                 with st.container(border=True):
+                    st.markdown('<span class="step-badge">STEP 1 / 3　メール確認</span>', unsafe_allow_html=True)
                     st.markdown("#### メールアドレスを入力")
                     reg_email = st.text_input("メールアドレス", placeholder="you@example.com", key="reg_email_input")
-                    if st.button("確認コードを送信", type="primary", use_container_width=True):
+                    if st.button("確認コードを送信", type="primary", use_container_width=True, key="reg_send"):
                         e = norm_email(reg_email)
-                        if valid_email(e) and not db_get_user(e):
+                        if not reg_email: st.error("メールアドレスを入力してください")
+                        elif not valid_email(e): st.error("有効なメールアドレスを入力してください")
+                        elif db_get_user(e): st.error("このメールアドレスはすでに登録されています")
+                        else:
                             code = generate_otp(); save_otp(e, code)
-                            if send_otp_email(e, code):
-                                st.session_state.reg_step = 2; st.session_state.reg_email = e
+                            with st.spinner("送信中..."):
+                                ok = send_otp_email(e, code, "メール確認")
+                            if ok:
+                                st.session_state.reg_step = 2
+                                st.session_state.reg_email = e
                                 st.rerun()
 
             elif step == 2:
+                reg_email = st.session_state.reg_email
                 with st.container(border=True):
-                    st.markdown(f"**{st.session_state.reg_email}** にコードを送信しました")
-                    code_input = st.text_input("確認コード（6桁）", max_chars=6)
-                    if st.button("コードを確認", type="primary", use_container_width=True):
-                        if verify_otp(st.session_state.reg_email, code_input):
-                            st.session_state.reg_step = 3; st.rerun()
+                    st.markdown('<span class="step-badge">STEP 2 / 3　コード確認</span>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="otp-hint">📨 <strong>{reg_email}</strong> に確認コードを送信しました。<br>{OTP_EXPIRE_MINUTES}分以内に入力してください。</div>', unsafe_allow_html=True)
+                    code_input = st.text_input("確認コード（6桁）", placeholder="123456", max_chars=6, key="reg_code")
+                    col_ok, col_back = st.columns([2, 1])
+                    with col_ok:
+                        if st.button("コードを確認", type="primary", use_container_width=True, key="reg_verify"):
+                            if not code_input: st.error("確認コードを入力してください")
+                            elif verify_otp(reg_email, code_input):
+                                st.session_state.reg_step = 3; st.rerun()
+                            else: st.error("コードが正しくないか、有効期限切れです")
+                    with col_back:
+                        if st.button("← 戻る", use_container_width=True, key="reg_back2"):
+                            st.session_state.reg_step = 1; st.rerun()
+                    if st.button("コードを再送信", use_container_width=True, key="reg_resend"):
+                        code = generate_otp(); save_otp(reg_email, code)
+                        with st.spinner("再送信中..."): send_otp_email(reg_email, code, "メール確認")
+                        st.success("新しいコードを送信しました")
 
             elif step == 3:
+                reg_email = st.session_state.get("reg_email")
+                if not reg_email: st.session_state.reg_step = 1; st.rerun()
                 with st.container(border=True):
-                    st.markdown("#### アカウント設定")
-                    display_name = st.text_input("表示名")
-                    new_pass = st.text_input("パスワード", type="password")
-                    if st.button("登録完了", type="primary", use_container_width=True):
-                        if db_create_user(st.session_state.reg_email, new_pass, display_name):
-                            user = {'email': st.session_state.reg_email, 'display_name': display_name, 'is_admin': False}
-                            st.session_state.update(authenticated=True, current_user=user, my_name=display_name)
-                            st.rerun()
+                    st.markdown('<span class="step-badge">STEP 3 / 3　アカウント設定</span>', unsafe_allow_html=True)
+                    st.markdown("#### プロフィールとパスワードを設定")
+                    st.success(f"✅ {reg_email} の確認が完了しました")
+                    display_name = st.text_input("表示名", placeholder="山田 太郎", key="reg_name")
+                    new_pass  = st.text_input("パスワード（6文字以上）", type="password", key="reg_pass1")
+                    new_pass2 = st.text_input("パスワード（確認）", type="password", key="reg_pass2")
+                    if st.button("登録を完了する", type="primary", use_container_width=True, key="reg_finish"):
+                        if not display_name: st.error("表示名を入力してください")
+                        elif len(new_pass) < 6: st.error("パスワードは6文字以上で設定してください")
+                        elif new_pass != new_pass2: st.error("パスワードが一致しません")
+                        else:
+                            if db_create_user(reg_email, new_pass, display_name):
+                                st.session_state.update(
+                                    authenticated=True, my_name=display_name,
+                                    current_user={'email': reg_email, 'display_name': display_name, 'is_admin': False},
+                                )
+                                st.session_state.pop("reg_email", None)
+                                st.session_state.reg_step = 1
+                                st.success("登録が完了しました！ようこそ！")
+                                time.sleep(0.6); st.rerun()
+                            else:
+                                st.error("登録に失敗しました。このメールアドレスはすでに使用されている可能性があります。")
 
 
 # ─────────────────────────────────────────────
@@ -492,36 +689,85 @@ def show_auth_page():
 
 def show_user_management_panel():
     st.markdown("### 👥 ユーザー管理")
-    users = db_list_users()
-    for u in users:
-        with st.container(border=True):
-            st.write(f"**{u['display_name']}** ({u['email']})")
-            if u['email'] != st.session_state.current_user['email']:
-                if st.button("削除", key=f"del_{u['email']}"):
-                    db_delete_user(u['email']); st.rerun()
+    with st.expander("📋 ユーザー一覧", expanded=True):
+        users = db_list_users()
+        if not users:
+            st.info("登録ユーザーがいません")
+        else:
+            for u in sorted(users, key=lambda x: x['created_at']):
+                is_self = u['email'] == st.session_state.current_user['email']
+                admin_tag = '<span class="user-row-admin">👑 管理者</span>' if u['is_admin'] else ""
+                name = u['display_name']
+                email = u['email']
+                date = u['created_at'][:10]
+                col_info, col_del = st.columns([5, 1])
+                with col_info:
+                    html = (
+                        '<div class="user-row-card">'
+                        f'<span class="user-row-name">{name}</span>'
+                        f'<span class="user-row-email">{email}</span>'
+                        '<span class="user-row-meta">'
+                        + admin_tag +
+                        f'<span class="user-row-date">登録: {date}</span>'
+                        '</span>'
+                        '</div>'
+                    )
+                    st.markdown(html, unsafe_allow_html=True)
+                with col_del:
+                    st.markdown("<div style='margin-top:0.5rem'></div>", unsafe_allow_html=True)
+                    if st.button("🗑️", key=f"del_{email}", disabled=is_self,
+                                 help="自分自身は削除できません" if is_self else "このユーザーを削除"):
+                        if db_delete_user(email): st.success(f"{name} を削除しました"); st.rerun()
+                        else: st.error("削除に失敗しました")
+
+    with st.expander("🔑 パスワードをリセット"):
+        users_list = db_list_users()
+        if users_list:
+            options = {f"{u['display_name']} ({u['email']})": u['email'] for u in users_list}
+            tgt = options[st.selectbox("対象ユーザー", list(options.keys()), key="pw_target")]
+            pw1 = st.text_input("新しいパスワード", type="password", key="new_pw1")
+            pw2 = st.text_input("確認（再入力）", type="password", key="new_pw2")
+            if st.button("パスワードをリセット", use_container_width=True):
+                if not pw1: st.error("パスワードを入力してください")
+                elif pw1 != pw2: st.error("パスワードが一致しません")
+                elif len(pw1) < 6: st.error("6文字以上で設定してください")
+                elif db_update_password(tgt, pw1): st.success("パスワードをリセットしました")
+                else: st.error("リセットに失敗しました")
+
+    with st.expander("✏️ 表示名を変更"):
+        users_list2 = db_list_users()
+        if users_list2:
+            opts2 = {f"{u['display_name']} ({u['email']})": u['email'] for u in users_list2}
+            tgt2 = opts2[st.selectbox("対象ユーザー", list(opts2.keys()), key="rename_target")]
+            new_name = st.text_input("新しい表示名", key="new_display_name")
+            if st.button("変更する", use_container_width=True):
+                if not new_name: st.error("表示名を入力してください")
+                elif db_update_display_name(tgt2, new_name): st.success("表示名を変更しました")
+                else: st.error("変更に失敗しました")
 
 
 # ─────────────────────────────────────────────
-# AIツールランチャー
+# AIツールランチャー（サイドバー）
 # ─────────────────────────────────────────────
 
 def show_ai_launcher():
     tools = [
-        ("🤝", "RelationAI", "人間関係サポート", "https://relationai-one.vercel.app/"),
-        ("🍳", "冷蔵庫レシピ生成", "AIレシピ作成", "https://recipe-rust-six.vercel.app/"),
-        ("🧠", "AIクイズアプリ", "知識を試そう！", "https://ai-quiz-app1.vercel.app/"),
+        ("🤝", "RelationAI",    "人間関係サポート",  "https://relationai-one.vercel.app/"),
+        ("🍳", "冷蔵庫レシピ生成", "AIレシピ自動作成",  "https://recipe-rust-six.vercel.app/"),
+        ("🧠", "AIクイズアプリ",  "知識を試そう！",    "https://ai-quiz-app1.vercel.app/"),
     ]
-    st.markdown('<span class="launcher-label">🚀 AIツール</span>', unsafe_allow_html=True)
+    html = '<span class="launcher-label">🚀 AIツール</span>'
     for emoji, title, sub, url in tools:
-        st.markdown(f"""
-        <a class="ai-card" href="{url}" target="_blank">
+        html += f"""
+        <a class="ai-card" href="{url}" target="_blank" rel="noopener">
             <span class="ai-card-emoji">{emoji}</span>
             <span class="ai-card-body">
                 <span class="ai-card-title">{title}</span>
                 <span class="ai-card-sub">{sub}</span>
             </span>
             <span class="ai-card-arrow">↗</span>
-        </a>""", unsafe_allow_html=True)
+        </a>"""
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
@@ -566,39 +812,108 @@ def create_new_room(exam_name, url, user_name):
     except: pass
 
 def delete_room(room_id):
-    try: tbl_rooms().delete_item(Key={"item_id": room_id}); return True
+    try:
+        tbl_rooms().delete_item(Key={'item_id': room_id}); return True
     except: return False
 
+def is_url_valid(url):
+    return url.startswith("http://") or url.startswith("https://")
+
+
 # ─────────────────────────────────────────────
-# メイン
+# 初期化
 # ─────────────────────────────────────────────
 
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-    st.session_state.admin_urls = {"G検定": "", "E資格": "", "AWS資格": ""}
-    st.session_state.custom_exams = {}
-    st.session_state.rooms = {}
-    st.session_state.last_refresh = datetime.now()
+EXAMS_DEFAULT = {
+    "G検定":  {"icon": "🤖", "description": "AIの基礎知識・理論"},
+    "E資格":  {"icon": "⚡", "description": "ディープラーニング実装"},
+    "AWS資格": {"icon": "☁️", "description": "AWSクラウド設計・運用"},
+}
+
+def init_state():
+    for k, v in {
+        "authenticated": False, "current_user": None,
+        "reg_step": 1, "reg_email": None, "rooms": {},
+        "my_name": "", "custom_exams": {},
+        "admin_urls": {k: "" for k in EXAMS_DEFAULT},
+        "last_refresh": datetime.now(),
+    }.items():
+        if k not in st.session_state: st.session_state[k] = v
+    if "db_loaded" not in st.session_state:
+        load_from_aws(); st.session_state.db_loaded = True
+
+def get_all_exams():
+    return {**EXAMS_DEFAULT, **st.session_state.custom_exams}
+
+
+# ─────────────────────────────────────────────
+# エントリーポイント
+# ─────────────────────────────────────────────
+init_state()
 
 if not st.session_state.authenticated:
     show_auth_page()
     st.stop()
 
-# ── ログイン後の画面 ──
-is_admin = st.session_state.current_user.get('is_admin', False)
+# ─────────────────────────────────────────────
+# メイン画面
+# ─────────────────────────────────────────────
+current_user = st.session_state.current_user
+is_admin = current_user.get('is_admin', False)
 
+# ── サイドバー ──
 with st.sidebar:
+    admin_pill = '<br><span class="admin-pill">👑 管理者</span>' if is_admin else ""
     st.markdown(f"""
     <div class="user-section">
         <div class="user-avatar">👤</div>
-        <div class="user-name">{st.session_state.current_user['display_name']}</div>
-        <div class="user-email">{st.session_state.current_user['email']}</div>
+        <div class="user-name">{current_user['display_name']}</div>
+        <div class="user-email">{current_user['email']}</div>
+        {admin_pill}
     </div>""", unsafe_allow_html=True)
+
     if st.button("🚪 ログアウト", use_container_width=True):
-        st.session_state.authenticated = False; st.rerun()
+        for k in ["authenticated","current_user","db_loaded","rooms",
+                  "custom_exams","admin_urls","last_refresh","my_name","reg_step","reg_email"]:
+            st.session_state.pop(k, None)
+        st.rerun()
+
     st.divider()
     show_ai_launcher()
+    st.divider()
 
+    st.markdown("### ➕ 検定を追加")
+    with st.expander("カスタム検定を追加"):
+        new_exam_name = st.text_input("検定名")
+        new_exam_icon = st.selectbox("アイコン", ["📊","💻","📝","🔬","💡","🎯","🏆","📐"])
+        if st.button("追加する", type="primary", use_container_width=True):
+            if new_exam_name:
+                st.session_state.custom_exams[new_exam_name] = {"icon": new_exam_icon, "description": "カスタム検定"}
+                st.session_state.admin_urls.setdefault(new_exam_name, "")
+                save_config_to_aws(); st.rerun()
+
+    if is_admin:
+        st.divider()
+        st.markdown("### ⚙️ 設定")
+        with st.expander("デフォルトURLを設定"):
+            all_exams_sb = get_all_exams()
+            for ename in all_exams_sb:
+                st.text_input(f"{all_exams_sb[ename]['icon']} {ename}",
+                              value=st.session_state.admin_urls.get(ename, ""),
+                              key=f"input_admin_{ename}")
+            if st.button("設定を保存", use_container_width=True):
+                for ename in all_exams_sb:
+                    st.session_state.admin_urls[ename] = st.session_state[f"input_admin_{ename}"]
+                save_config_to_aws(); st.success("AWSに保存しました！"); st.rerun()
+
+    st.divider()
+    auto_refresh = st.toggle("🔄 自動更新（30秒）", value=False)
+    if auto_refresh:
+        if (datetime.now() - st.session_state.last_refresh).seconds >= 30:
+            st.session_state.last_refresh = datetime.now(); st.rerun()
+        time.sleep(1); st.rerun()
+
+# ── メインコンテンツ ──
 st.markdown("""
 <div class="main-header">
     <h1>📚 StudyConnect</h1>
@@ -606,27 +921,68 @@ st.markdown("""
 </div>""", unsafe_allow_html=True)
 
 load_from_aws()
-exams = {**{"G検定": {"icon": "🤖"}, "E資格": {"icon": "⚡"}, "AWS資格": {"icon": "☁️"}}, **st.session_state.custom_exams}
-tabs = st.tabs([f"{v['icon']} {k}" for k, v in exams.items()] + (["🛡️ 管理"] if is_admin else []))
-
-for i, (name, info) in enumerate(exams.items()):
-    with tabs[i]:
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            st.markdown(f"#### {name} のルーム")
-            for r in st.session_state.rooms.get(name, []):
-                with st.container(border=True):
-                    st.write(f"👋 {r['host']}")
-                    st.link_button("🚀 参加する", r['url'], use_container_width=True)
-                    if is_admin and st.button("削除", key=f"del_r_{r['id']}"):
-                        delete_room(r['id']); st.rerun()
-        with col2:
-            st.markdown("#### ルームを追加")
-            u_input = st.text_input("URL", key=f"add_{name}")
-            if st.button("公開する", key=f"btn_{name}", type="primary"):
-                if u_input.startswith("http"):
-                    create_new_room(name, u_input, st.session_state.my_name); st.rerun()
+all_exams  = get_all_exams()
+exam_names = list(all_exams.keys())
 
 if is_admin:
-    with tabs[-1]:
+    all_tabs  = st.tabs([f"{all_exams[n]['icon']} {n}" for n in exam_names] + ["🛡️ ユーザー管理"])
+    exam_tabs = all_tabs[:-1]; admin_tab = all_tabs[-1]
+else:
+    exam_tabs = st.tabs([f"{all_exams[n]['icon']} {n}" for n in exam_names])
+    admin_tab = None
+
+for idx, exam_name in enumerate(exam_names):
+    with exam_tabs[idx]:
+        rooms_list = st.session_state.rooms.get(exam_name, [])
+        col_left, col_right = st.columns([2, 1], gap="large")
+
+        with col_left:
+            st.markdown(f'<div class="section-title">🟢 {exam_name} のルーム一覧</div>', unsafe_allow_html=True)
+            if not rooms_list:
+                st.markdown("""
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏠</div>
+                    <div class="empty-state-title">まだルームがありません</div>
+                    <div class="empty-state-sub">右側のフォームから新しいルームを追加してみましょう</div>
+                </div>""", unsafe_allow_html=True)
+            else:
+                for room in rooms_list:
+                    st.markdown(f"""
+                    <div class="room-card">
+                        <div class="room-card-host">👋 {room['host']} のルーム</div>
+                        <div class="room-url-box">
+                            <a href="{room['url']}" target="_blank">{room['url']}</a>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
+                    if is_admin:
+                        btn_col1, btn_col2 = st.columns([3, 1])
+                        with btn_col1:
+                            st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
+                        with btn_col2:
+                            if st.button("🗑️ 削除", key=f"del_room_{room['id']}", use_container_width=True):
+                                if delete_room(room['id']):
+                                    st.success("削除しました"); st.rerun()
+                                else:
+                                    st.error("削除に失敗しました")
+                    else:
+                        st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
+
+        with col_right:
+            st.markdown('<div class="add-panel-wrap">', unsafe_allow_html=True)
+            st.markdown('<div class="add-room-title">🏰 ルームを追加</div>', unsafe_allow_html=True)
+            st.markdown('<div class="add-room-sub">通話URLを貼り付けて公開しよう</div>', unsafe_allow_html=True)
+            url_input = st.text_input("URL", value="", placeholder="https://zoom.us/j/...",
+                                      key=f"url_{exam_name}", label_visibility="collapsed")
+            if st.button("✅ ルームを公開", key=f"create_{exam_name}", type="primary", use_container_width=True):
+                if is_url_valid(url_input):
+                    create_new_room(exam_name, url_input, st.session_state.my_name)
+                    st.balloons(); st.rerun()
+                else:
+                    st.error("有効なURLを入力してください（http / https）")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+if admin_tab:
+    with admin_tab:
         show_user_management_panel()
+
+st.markdown('<div style="text-align:center;color:#71767b;font-size:0.8rem;padding:2rem 0 1rem;">📚 StudyConnect — 閲覧者が自由にルームを追加・共有できます</div>', unsafe_allow_html=True)
