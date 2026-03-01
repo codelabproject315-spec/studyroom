@@ -31,18 +31,42 @@ st.markdown("""
     html, body, [class*="css"] {
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
     }
-    .stApp { background: #f0f2f6; }
+
+    /* ── ブラウザUIツールバー類を非表示（Streamlit埋め込みUI要素） ── */
+    header[data-testid="stHeader"] { display: none !important; }
+    #MainMenu { display: none !important; }
+    .stDeployButton { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    [data-testid="stStatusWidget"] { display: none !important; }
+    footer { visibility: hidden !important; display: none !important; }
+    /* Streamlit右上のメニュー（Share, ☆など）を完全非表示 */
+    ._profileContainer_gzau3_53 { display: none !important; }
+    [data-testid="baseButton-headerNoPadding"] { display: none !important; }
+    .viewerBadge_container__r5tak { display: none !important; }
+    .viewerBadge_link__qRIco { display: none !important; }
+    button[title="View fullscreen"] { display: none !important; }
+    button[title="Share"] { display: none !important; }
+    button[aria-label="Share"] { display: none !important; }
+    [data-testid="manage-app-button"] { display: none !important; }
+    [data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
+
+    /* ── X風 全体背景（真っ黒） ── */
+    .stApp { background: #000000; }
+    .main { background: #000000; }
+    [data-testid="stAppViewContainer"] { background: #000000; }
+    [data-testid="block-container"] { background: #000000; }
 
     /* ── サイドバー全体 ── */
     [data-testid="stSidebar"] {
-        background: #1a1a2e !important;
-        border-right: none !important;
+        background: #000000 !important;
+        border-right: 1px solid #2f3336 !important;
     }
-    [data-testid="stSidebar"] * { color: #e8e8f0 !important; }
+    [data-testid="stSidebar"] * { color: #e7e9ea !important; }
     [data-testid="stSidebar"] .stButton > button {
         background: rgba(255,255,255,0.08) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #e8e8f0 !important;
+        color: #e7e9ea !important;
         border-radius: 10px !important;
         font-size: 0.85rem !important;
         transition: all 0.2s !important;
@@ -53,7 +77,7 @@ st.markdown("""
     [data-testid="stSidebar"] .stTextInput input {
         background: rgba(255,255,255,0.06) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #e8e8f0 !important;
+        color: #e7e9ea !important;
         border-radius: 8px !important;
     }
     [data-testid="stSidebar"] hr {
@@ -123,37 +147,39 @@ st.markdown("""
 
     /* ── メインヘッダー ── */
     .main-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px;
+        background: linear-gradient(135deg, #000000 0%, #0d0d0d 100%); border-radius: 20px;
         padding: 2.2rem 2rem; margin-bottom: 1.5rem;
         text-align: center; position: relative; overflow: hidden;
+        border: 1px solid #2f3336;
     }
     .main-header::before {
         content: ''; position: absolute; inset: 0;
         background:
-            radial-gradient(ellipse at 25% 50%, rgba(102,126,234,0.28) 0%, transparent 55%),
-            radial-gradient(ellipse at 75% 50%, rgba(118,75,162,0.22) 0%, transparent 55%);
+            radial-gradient(ellipse at 25% 50%, rgba(102,126,234,0.18) 0%, transparent 55%),
+            radial-gradient(ellipse at 75% 50%, rgba(118,75,162,0.14) 0%, transparent 55%);
     }
     .main-header h1 {
-        font-size: 2.2rem; font-weight: 900; color: #fff;
+        font-size: 2.2rem; font-weight: 900; color: #e7e9ea;
         margin: 0 0 0.3rem 0; position: relative;
     }
     .main-header p {
-        color: rgba(255,255,255,0.5); font-size: 0.9rem;
+        color: rgba(231,233,234,0.5); font-size: 0.9rem;
         margin: 0; position: relative;
     }
 
     /* ── ルームカード ── */
     .room-card {
-        background: #fff; border-radius: 16px; padding: 1.4rem 1.6rem;
-        margin-bottom: 1rem; border: 1px solid #e2e4ea;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        background: #16181c; border-radius: 16px; padding: 1.4rem 1.6rem;
+        margin-bottom: 1rem; border: 1px solid #2f3336;
+        box-shadow: none;
     }
     .room-card-host {
-        font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.8rem;
+        font-size: 1rem; font-weight: 700; color: #e7e9ea; margin-bottom: 0.8rem;
     }
     .room-url-box {
-        background: #1a1a2e; border-radius: 10px;
+        background: #0d0d0d; border-radius: 10px;
         padding: 0.9rem 1.1rem; word-break: break-all;
+        border: 1px solid #2f3336;
     }
     .room-url-box a {
         color: #a5b4fc !important; font-size: 0.82rem;
@@ -162,27 +188,27 @@ st.markdown("""
 
     /* ── 空ステート ── */
     .empty-state {
-        background: #fff; border-radius: 16px; padding: 2.8rem 2rem;
-        text-align: center; border: 2px dashed #ddd8f5; color: #999;
+        background: #16181c; border-radius: 16px; padding: 2.8rem 2rem;
+        text-align: center; border: 2px dashed #2f3336; color: #71767b;
     }
     .empty-state-icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
-    .empty-state-title { font-weight: 700; color: #555; margin-bottom: 0.3rem; }
+    .empty-state-title { font-weight: 700; color: #e7e9ea; margin-bottom: 0.3rem; }
     .empty-state-sub { font-size: 0.85rem; }
 
     /* ── ルーム追加パネル ── */
-    .add-room-title { font-size: 1rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
-    .add-room-sub { font-size: 0.78rem; color: #999; margin-bottom: 0; }
+    .add-room-title { font-size: 1rem; font-weight: 800; color: #e7e9ea; margin-bottom: 0.25rem; }
+    .add-room-sub { font-size: 0.78rem; color: #71767b; margin-bottom: 0; }
 
     /* ── セクションタイトル ── */
     .section-title {
-        font-size: 1.05rem; font-weight: 800; color: #1a1a2e;
+        font-size: 1.05rem; font-weight: 800; color: #e7e9ea;
         margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
     }
 
     /* ── ユーザー管理：ユーザー行カード ── */
     .user-row-card {
-        background: #f0eef8;
-        border: 1px solid #e2e4ea;
+        background: #16181c;
+        border: 1px solid #2f3336;
         border-radius: 12px;
         padding: 0.9rem 1.1rem;
         margin-bottom: 0.6rem;
@@ -192,13 +218,13 @@ st.markdown("""
         gap: 1rem;
     }
     .user-row-name {
-        font-size: 0.95rem; font-weight: 700; color: #1a1a2e;
+        font-size: 0.95rem; font-weight: 700; color: #e7e9ea;
     }
     .user-row-email {
-        font-size: 0.78rem; color: #666; margin-left: 0.4rem;
+        font-size: 0.78rem; color: #71767b; margin-left: 0.4rem;
     }
     .user-row-date {
-        font-size: 0.72rem; color: #999; margin-top: 0.2rem;
+        font-size: 0.72rem; color: #71767b; margin-top: 0.2rem;
     }
     .user-row-admin {
         display: inline-block;
@@ -208,68 +234,70 @@ st.markdown("""
         margin-left: 0.4rem; vertical-align: middle;
     }
 
-    /* expander の背景を統一 */
+    /* expander の背景を統一（X風ダーク） */
     [data-testid="stExpander"] {
-        background: #fff !important;
-        border: 1.5px solid #eae7f5 !important;
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
         border-radius: 14px !important;
     }
     [data-testid="stExpander"] > div:first-child {
         border-radius: 14px !important;
     }
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] p,
+    [data-testid="stExpander"] label,
+    [data-testid="stExpander"] span {
+        color: #e7e9ea !important;
+    }
 
     /* ── ログイン ── */
-    .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #1a1a2e; margin-bottom: 0.3rem; }
-    .login-subtitle { text-align: center; color: #888; font-size: 0.9rem; }
+    .login-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: #e7e9ea; margin-bottom: 0.3rem; }
+    .login-subtitle { text-align: center; color: #71767b; font-size: 0.9rem; }
     .otp-hint {
-        background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+        background: #0d1117; border: 1px solid #1d4ed8; border-radius: 10px;
         padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.88rem;
-        color: #2563eb; line-height: 1.55;
+        color: #93c5fd; line-height: 1.55;
     }
     .step-badge {
-        display: inline-block; background: #1a1a2e; color: white;
+        display: inline-block; background: #2f3336; color: #e7e9ea;
         border-radius: 20px; padding: 0.15rem 0.75rem; font-size: 0.72rem;
         font-weight: 700; margin-bottom: 0.6rem; letter-spacing: 0.04em;
     }
 
     /* ── タブ ── */
     .stTabs [data-baseweb="tab-list"] {
-        background: #e8eaed; border-radius: 12px; padding: 4px; gap: 2px;
+        background: #16181c; border-radius: 12px; padding: 4px; gap: 2px;
+        border: 1px solid #2f3336;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 9px !important; font-weight: 600 !important;
         font-size: 0.84rem !important; padding: 0.4rem 1rem !important;
+        color: #71767b !important;
     }
     .stTabs [aria-selected="true"] {
-        background: #1a1a2e !important; color: white !important;
+        background: #e7e9ea !important; color: #000000 !important;
     }
 
     /* ── ボタン ── */
     .stButton > button[kind="primary"] {
-        background: #1a1a2e !important; border: none !important;
+        background: #e7e9ea !important; color: #000000 !important;
+        border: none !important;
         border-radius: 10px !important; font-weight: 700 !important;
         transition: opacity 0.2s !important;
     }
     .stButton > button[kind="primary"]:hover { opacity: 0.82 !important; }
 
-    /* ── ユーザー管理：ユーザー行カード ── */
-    .user-row-card {
-        background: #ffffff;
-        border: 1px solid #e2e4ea;
-        border-radius: 12px;
-        padding: 0.85rem 1.1rem;
-        margin-bottom: 0.5rem;
-    }
+    /* ── ユーザー管理：ユーザー行カード（グリッド版） ── */
     .user-row-card {
         display: grid;
         grid-template-columns: 140px 1fr auto;
         align-items: center;
         gap: 0 1.5rem;
     }
-    .user-row-name { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
-    .user-row-email { font-size: 0.88rem; color: #444; font-weight: 500; }
+    .user-row-name { font-size: 1rem; font-weight: 700; color: #e7e9ea; }
+    .user-row-email { font-size: 0.88rem; color: #71767b; font-weight: 500; }
     .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
-    .user-row-date { font-size: 0.82rem; color: #888; font-weight: 500; white-space: nowrap; }
+    .user-row-date { font-size: 0.82rem; color: #71767b; font-weight: 500; white-space: nowrap; }
     .user-row-admin {
         display: inline-block;
         background: linear-gradient(135deg, #f59e0b, #ef4444);
@@ -278,17 +306,17 @@ st.markdown("""
         margin-left: 0.5rem; vertical-align: middle;
     }
 
-    /* ── expander 共通 ── */
+    /* ── expander 共通（ダーク統一） ── */
     [data-testid="stExpander"] {
-        background: #fff !important;
-        border: 1px solid #e2e4ea !important;
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
         border-radius: 14px !important;
         overflow: hidden;
     }
-    /* サイドバー内 expander は濃色 */
+    /* サイドバー内 expander */
     [data-testid="stSidebar"] [data-testid="stExpander"] {
-        background: rgba(255,255,255,0.10) !important;
-        border: 1px solid rgba(255,255,255,0.18) !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 12px !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] summary,
@@ -315,14 +343,43 @@ st.markdown("""
 
     /* ── メイン右カラム（ルーム追加パネル）── */
     .add-panel-wrap {
-        background: #fff;
-        border: 1px solid #e2e4ea;
+        background: #16181c;
+        border: 1px solid #2f3336;
         border-radius: 16px;
         padding: 1.4rem 1.5rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        box-shadow: none;
     }
 
-    footer { visibility: hidden; }
+    /* ── Streamlit標準入力をX風に ── */
+    .stTextInput input, .stSelectbox select, [data-testid="stTextInput"] input {
+        background: #000000 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput input:focus {
+        border-color: #1d9bf0 !important;
+        box-shadow: 0 0 0 2px rgba(29,155,240,0.2) !important;
+    }
+    [data-testid="stSelectbox"] {
+        background: #000000 !important;
+    }
+
+    /* ── container border ── */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 14px !important;
+    }
+
+    /* ── テキスト全般をX風白に ── */
+    .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: #e7e9ea !important;
+    }
+    label { color: #e7e9ea !important; }
+    .stAlert { background: #16181c !important; border-color: #2f3336 !important; }
+
+    footer { visibility: hidden; display: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -850,4 +907,4 @@ if admin_tab:
     with admin_tab:
         show_user_management_panel()
 
-st.markdown('<div style="text-align:center;color:#bbb;font-size:0.8rem;padding:2rem 0 1rem;">📚 StudyConnect — 閲覧者が自由にルームを追加・共有できます</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align:center;color:#71767b;font-size:0.8rem;padding:2rem 0 1rem;">📚 StudyConnect — 閲覧者が自由にルームを追加・共有できます</div>', unsafe_allow_html=True)
