@@ -944,6 +944,34 @@ with st.sidebar:
             st.session_state.last_refresh = datetime.now(); st.rerun()
         time.sleep(1); st.rerun()
 
+# ── サイドバー開閉ボタン（固定表示） ──
+st.markdown("""
+<style>
+.sidebar-toggle-btn {
+    position: fixed;
+    top: 3.2rem;
+    left: 0.6rem;
+    z-index: 9999;
+    background: #16181c;
+    border: 1px solid #2f3336;
+    border-radius: 8px;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+}
+.sidebar-toggle-btn:hover { background: #2f3336; }
+</style>
+<div class="sidebar-toggle-btn" onclick="
+    const btn = window.parent.document.querySelector('[data-testid=baseButton-headerNoPadding]');
+    if(btn) btn.click();
+" title="サイドバーを開閉">☰</div>
+""", unsafe_allow_html=True)
+
 # ── メインコンテンツ ──
 st.markdown("""
 <div class="main-header">
