@@ -33,7 +33,7 @@ st.markdown("""
     }
 
 /* ── ブラウザUIツールバー類を非表示 ── */
-header[data-testid="stHeader"] { display: none !important; }
+header[data-testid="stHeader"] { background: transparent !important; }
 #MainMenu { display: none !important; }
 .stDeployButton { display: none !important; }
 [data-testid="stToolbar"] { display: none !important; }
