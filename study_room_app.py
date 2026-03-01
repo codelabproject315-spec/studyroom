@@ -33,7 +33,6 @@ st.markdown("""
     }
 
     /* ── ブラウザUIツールバー類を非表示 ── */
-    header[data-testid="stHeader"] { display: none !important; }
     #MainMenu { display: none !important; }
     .stDeployButton { display: none !important; }
     [data-testid="stToolbar"] { display: none !important; }
@@ -47,19 +46,21 @@ st.markdown("""
     button[title="Share"] { display: none !important; }
     button[aria-label="Share"] { display: none !important; }
     [data-testid="manage-app-button"] { display: none !important; }
-    [data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
+
+    /* ── ヘッダーは黒背景で残す（開閉ボタンを生かすため） ── */
+    header[data-testid="stHeader"] {
+        background: #000000 !important;
+        border-bottom: 1px solid #2f3336 !important;
+        height: 2.8rem !important;
+    }
 
     /* ── サイドバー開閉ボタンをX風にスタイル ── */
     [data-testid="baseButton-headerNoPadding"] {
         display: flex !important;
-        background: #000000 !important;
+        background: transparent !important;
         color: #e7e9ea !important;
-        border: 1px solid #2f3336 !important;
+        border: none !important;
         border-radius: 8px !important;
-        position: fixed !important;
-        top: 0.6rem !important;
-        left: 0.6rem !important;
-        z-index: 999 !important;
     }
     [data-testid="baseButton-headerNoPadding"]:hover {
         background: #16181c !important;
@@ -67,6 +68,8 @@ st.markdown("""
     [data-testid="baseButton-headerNoPadding"] svg {
         fill: #e7e9ea !important;
     }
+
+    [data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
 
     /* ── X風 全体背景（真っ黒） ── */
     .stApp { background: #000000; }
