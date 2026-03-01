@@ -887,9 +887,9 @@ with st.sidebar:
     show_ai_launcher()
     st.divider()
 
-    st.markdown("### ➕ 検定を追加")
-    with st.expander("カスタム検定を追加"):
-        new_exam_name = st.text_input("検定名")
+    st.markdown("### ➕ カテゴリーを追加")
+    with st.expander("カテゴリーを追加"):
+        new_exam_name = st.text_input("カテゴリー名")
         new_exam_icon = st.selectbox("アイコン", ["📊","💻","📝","🔬","💡","🎯","🏆","📐"])
         if st.button("追加する", type="primary", use_container_width=True):
             if new_exam_name:
