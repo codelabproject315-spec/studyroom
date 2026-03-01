@@ -32,7 +32,7 @@ st.markdown("""
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
     }
 
-    /* ── ブラウザUIツールバー類を非表示（Streamlit埋め込みUI要素） ── */
+    /* ── ブラウザUIツールバー類を非表示 ── */
     header[data-testid="stHeader"] { display: none !important; }
     #MainMenu { display: none !important; }
     .stDeployButton { display: none !important; }
@@ -40,7 +40,6 @@ st.markdown("""
     [data-testid="stDecoration"] { display: none !important; }
     [data-testid="stStatusWidget"] { display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
-    /* Streamlit右上のメニュー（Share, ☆など）を完全非表示 */
     ._profileContainer_gzau3_53 { display: none !important; }
     [data-testid="baseButton-headerNoPadding"] { display: none !important; }
     .viewerBadge_container__r5tak { display: none !important; }
@@ -109,15 +108,15 @@ st.markdown("""
     }
     .ai-card {
         display: flex; align-items: center; gap: 0.8rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.09);
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.09) !important;
         border-radius: 12px; padding: 0.8rem 1rem;
         margin-bottom: 0.5rem; text-decoration: none !important;
         transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
     .ai-card:hover {
-        background: rgba(102,126,234,0.22);
-        border-color: rgba(102,126,234,0.45);
+        background: rgba(102,126,234,0.22) !important;
+        border-color: rgba(102,126,234,0.45) !important;
         transform: translateX(4px);
         text-decoration: none !important;
     }
@@ -201,49 +200,119 @@ st.markdown("""
         border-radius: 12px;
         padding: 0.9rem 1.1rem;
         margin-bottom: 0.6rem;
-        display: flex;
+        display: grid;
+        grid-template-columns: 140px 1fr auto;
         align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
+        gap: 0 1.5rem;
     }
-    .user-row-name {
-        font-size: 0.95rem; font-weight: 700; color: #e7e9ea;
-    }
-    .user-row-email {
-        font-size: 0.78rem; color: #71767b; margin-left: 0.4rem;
-    }
-    .user-row-date {
-        font-size: 0.72rem; color: #71767b; margin-top: 0.2rem;
-    }
+    .user-row-name { font-size: 1rem; font-weight: 700; color: #e7e9ea; }
+    .user-row-email { font-size: 0.88rem; color: #71767b; font-weight: 500; }
+    .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
+    .user-row-date { font-size: 0.82rem; color: #71767b; font-weight: 500; white-space: nowrap; }
     .user-row-admin {
         display: inline-block;
         background: linear-gradient(135deg, #f59e0b, #ef4444);
         color: white; border-radius: 20px;
         padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
-        margin-left: 0.4rem; vertical-align: middle;
+        margin-left: 0.5rem; vertical-align: middle;
     }
 
-    /* expander の背景を統一（X風ダーク） */
+    /* ── expander 共通（ダーク統一）── */
     [data-testid="stExpander"] {
         background: #16181c !important;
         border: 1px solid #2f3336 !important;
         border-radius: 14px !important;
+        overflow: hidden;
     }
-    [data-testid="stExpander"] > div:first-child {
-        border-radius: 14px !important;
-        background: #16181c !important;
-    }
-    [data-testid="stExpander"] summary,
-    [data-testid="stExpander"] p,
-    [data-testid="stExpander"] label,
-    [data-testid="stExpander"] span {
+    /* expander のすべての子要素を強制ダーク */
+    [data-testid="stExpander"] *,
+    [data-testid="stExpander"] > *,
+    [data-testid="stExpander"] details,
+    [data-testid="stExpander"] details > *,
+    [data-testid="stExpander"] details > div,
+    [data-testid="stExpander"] details > summary,
+    [data-testid="stExpanderDetails"],
+    [data-testid="stExpanderDetails"] > *,
+    [data-testid="stExpanderDetails"] > div,
+    [data-testid="stExpanderDetails"] > div > *,
+    [data-testid="stExpanderDetails"] > div > div,
+    [data-testid="stExpanderDetails"] > div > div > * {
+        background-color: #16181c !important;
         color: #e7e9ea !important;
     }
-    /* expander 開閉どちらでも内側を強制ダーク（ボタン・入力系は除外） */
-    [data-testid="stExpander"] div:not([class*="stButton"]),
-    [data-testid="stExpander"] section,
-    [data-testid="stExpander"] [data-testid="stVerticalBlock"] {
-        background-color: #16181c !important;
+    /* ボタン・入力系は個別上書きで対応するので色指定のみ除外 */
+    [data-testid="stExpander"] summary {
+        background: #16181c !important;
+        color: #e7e9ea !important;
+    }
+
+    /* サイドバー内 expander */
+    [data-testid="stSidebar"] [data-testid="stExpander"] {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 12px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] *,
+    [data-testid="stSidebar"] [data-testid="stExpander"] details,
+    [data-testid="stSidebar"] [data-testid="stExpander"] details > *,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"],
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > *,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div > div {
+        background-color: rgba(255,255,255,0.05) !important;
+        color: #e8e8f0 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] input {
+        background: rgba(255,255,255,0.10) !important;
+        color: #e8e8f0 !important;
+        border-color: rgba(255,255,255,0.2) !important;
+    }
+
+    /* ── テキスト入力・パスワード入力（全域ダーク）── */
+    input, textarea {
+        background: #000000 !important;
+        color: #e7e9ea !important;
+        border-color: #2f3336 !important;
+    }
+    input::placeholder, textarea::placeholder {
+        color: #71767b !important;
+    }
+    .stTextInput input,
+    [data-testid="stTextInput"] input,
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        background: #000000 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput input:focus,
+    [data-testid="stTextInput"] input:focus {
+        border-color: #1d9bf0 !important;
+        box-shadow: 0 0 0 2px rgba(29,155,240,0.2) !important;
+    }
+
+    /* ── Selectbox ダーク化 ── */
+    [data-testid="stSelectbox"] > div > div,
+    [data-testid="stSelectbox"] > div > div > div {
+        background: #000000 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSelectbox"] svg { fill: #e7e9ea !important; }
+    /* ドロップダウンリスト */
+    ul[data-testid="stSelectboxVirtualDropdown"] {
+        background: #16181c !important;
+        border: 1px solid #2f3336 !important;
+    }
+    li[role="option"] {
+        background: #16181c !important;
+        color: #e7e9ea !important;
+    }
+    li[role="option"]:hover {
+        background: #2f3336 !important;
     }
 
     /* ── ログイン ── */
@@ -275,7 +344,6 @@ st.markdown("""
     }
 
     /* ── ボタン ── */
-    /* プライマリボタン：白背景＋黒文字（X風） */
     .stButton > button[kind="primary"],
     .stButton > button[data-testid="baseButton-primary"] {
         background: #e7e9ea !important; color: #000000 !important;
@@ -286,7 +354,6 @@ st.markdown("""
     .stButton > button[kind="primary"]:hover,
     .stButton > button[data-testid="baseButton-primary"]:hover { opacity: 0.82 !important; }
 
-    /* セカンダリ・通常ボタン：ダーク背景＋白文字 */
     .stButton > button:not([kind="primary"]) {
         background: #16181c !important; color: #e7e9ea !important;
         border: 1px solid #2f3336 !important;
@@ -296,12 +363,12 @@ st.markdown("""
     .stButton > button:not([kind="primary"]):hover {
         background: #1d1f23 !important; border-color: #71767b !important;
     }
-    /* disabledボタン */
     .stButton > button:disabled {
         background: #0d0d0d !important; color: #71767b !important;
         border-color: #2f3336 !important; opacity: 0.5 !important;
     }
-    /* サイドバー内ボタン：半透明ダーク（expander内含む全て） */
+
+    /* サイドバー内ボタン */
     [data-testid="stSidebar"] .stButton > button {
         background: rgba(255,255,255,0.08) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
@@ -312,76 +379,7 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton > button:hover {
         background: rgba(255,255,255,0.15) !important;
     }
-
-    /* ── ユーザー管理：ユーザー行カード（グリッド版） ── */
-    .user-row-card {
-        display: grid;
-        grid-template-columns: 140px 1fr auto;
-        align-items: center;
-        gap: 0 1.5rem;
-    }
-    .user-row-name { font-size: 1rem; font-weight: 700; color: #e7e9ea; }
-    .user-row-email { font-size: 0.88rem; color: #71767b; font-weight: 500; }
-    .user-row-meta { display: flex; align-items: center; gap: 0.8rem; }
-    .user-row-date { font-size: 0.82rem; color: #71767b; font-weight: 500; white-space: nowrap; }
-    .user-row-admin {
-        display: inline-block;
-        background: linear-gradient(135deg, #f59e0b, #ef4444);
-        color: white; border-radius: 20px;
-        padding: 0.08rem 0.55rem; font-size: 0.65rem; font-weight: 700;
-        margin-left: 0.5rem; vertical-align: middle;
-    }
-
-    /* ── expander 共通（ダーク統一） ── */
-    [data-testid="stExpander"] {
-        background: #16181c !important;
-        border: 1px solid #2f3336 !important;
-        border-radius: 14px !important;
-        overflow: hidden;
-    }
-    /* expander 開いたときの内側コンテンツも強制ダーク */
-    [data-testid="stExpander"] details,
-    [data-testid="stExpander"] details > div,
-    [data-testid="stExpander"] details > summary,
-    [data-testid="stExpander"] > details,
-    [data-testid="stExpander"] > div,
-    [data-testid="stExpander"] > div > div,
-    [data-testid="stExpander"] > div > div > div,
-    [data-testid="stExpander"] [data-testid="stExpanderDetails"],
-    [data-testid="stExpanderDetails"],
-    [data-testid="stExpanderDetails"] > div,
-    details[data-testid="stExpander"],
-    details[data-testid="stExpander"] > div {
-        background: #16181c !important;
-        color: #e7e9ea !important;
-    }
-
-    /* サイドバー内 expander */
-    [data-testid="stSidebar"] [data-testid="stExpander"] {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
-        border-radius: 12px !important;
-    }
-    /* サイドバー expander 開いたときの内側も同色 */
-    [data-testid="stSidebar"] [data-testid="stExpander"] details,
-    [data-testid="stSidebar"] [data-testid="stExpander"] details > div,
-    [data-testid="stSidebar"] [data-testid="stExpander"] > div,
-    [data-testid="stSidebar"] [data-testid="stExpander"] > div > div,
-    [data-testid="stSidebar"] [data-testid="stExpanderDetails"],
-    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div {
-        background: rgba(255,255,255,0.05) !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] summary,
-    [data-testid="stSidebar"] [data-testid="stExpander"] p,
-    [data-testid="stSidebar"] [data-testid="stExpander"] label,
-    [data-testid="stSidebar"] [data-testid="stExpander"] span {
-        color: #e8e8f0 !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stExpander"] input {
-        background: rgba(255,255,255,0.10) !important;
-        color: #e8e8f0 !important;
-        border-color: rgba(255,255,255,0.2) !important;
-    }
+    /* サイドバー expander 内ボタン */
     [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
         background: rgba(255,255,255,0.08) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
@@ -402,26 +400,16 @@ st.markdown("""
         box-shadow: none;
     }
 
-    /* ── Streamlit標準入力をX風に ── */
-    .stTextInput input, .stSelectbox select, [data-testid="stTextInput"] input {
-        background: #000000 !important;
-        border: 1px solid #2f3336 !important;
-        color: #e7e9ea !important;
-        border-radius: 8px !important;
-    }
-    .stTextInput input:focus {
-        border-color: #1d9bf0 !important;
-        box-shadow: 0 0 0 2px rgba(29,155,240,0.2) !important;
-    }
-    [data-testid="stSelectbox"] {
-        background: #000000 !important;
-    }
-
     /* ── container border ── */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: #16181c !important;
         border: 1px solid #2f3336 !important;
         border-radius: 14px !important;
+    }
+    /* container 内部もダーク */
+    [data-testid="stVerticalBlockBorderWrapper"] > div,
+    [data-testid="stVerticalBlockBorderWrapper"] > div > div {
+        background: #16181c !important;
     }
 
     /* ── テキスト全般をX風白に ── */
@@ -430,6 +418,11 @@ st.markdown("""
     }
     label { color: #e7e9ea !important; }
     .stAlert { background: #16181c !important; border-color: #2f3336 !important; }
+
+    /* ── 全体的なdiv背景の白抑制 ── */
+    section[data-testid="stSidebar"] > div {
+        background: #000000 !important;
+    }
 
     footer { visibility: hidden; display: none; }
 </style>
