@@ -248,8 +248,8 @@ st.markdown("""
 
     /* サイドバー内 expander */
     [data-testid="stSidebar"] [data-testid="stExpander"] {
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
+        background: #0d0d0d !important;
+        border: 1px solid #2f3336 !important;
         border-radius: 12px !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] *,
@@ -259,13 +259,13 @@ st.markdown("""
     [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > *,
     [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div,
     [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div > div {
-        background-color: rgba(255,255,255,0.05) !important;
+        background-color: #0d0d0d !important;
         color: #e8e8f0 !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] input {
-        background: rgba(255,255,255,0.10) !important;
+        background: #1a1a1a !important;
         color: #e8e8f0 !important;
-        border-color: rgba(255,255,255,0.2) !important;
+        border-color: #2f3336 !important;
     }
 
     /* ── テキスト入力・パスワード入力（全域ダーク）── */
