@@ -242,12 +242,17 @@ st.markdown("""
     }
     [data-testid="stExpander"] > div:first-child {
         border-radius: 14px !important;
+        background: #16181c !important;
     }
     [data-testid="stExpander"] summary,
     [data-testid="stExpander"] p,
     [data-testid="stExpander"] label,
     [data-testid="stExpander"] span {
         color: #e7e9ea !important;
+    }
+    /* expander 開閉どちらでも内側を強制ダーク */
+    [data-testid="stExpander"] *:not(button):not(input):not(select):not(textarea):not(a):not(svg):not(path) {
+        background-color: #16181c !important;
     }
 
     /* ── ログイン ── */
@@ -313,11 +318,37 @@ st.markdown("""
         border-radius: 14px !important;
         overflow: hidden;
     }
+    /* expander 開いたときの内側コンテンツも強制ダーク */
+    [data-testid="stExpander"] details,
+    [data-testid="stExpander"] details > div,
+    [data-testid="stExpander"] details > summary,
+    [data-testid="stExpander"] > details,
+    [data-testid="stExpander"] > div,
+    [data-testid="stExpander"] > div > div,
+    [data-testid="stExpander"] > div > div > div,
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"],
+    [data-testid="stExpanderDetails"],
+    [data-testid="stExpanderDetails"] > div,
+    details[data-testid="stExpander"],
+    details[data-testid="stExpander"] > div {
+        background: #16181c !important;
+        color: #e7e9ea !important;
+    }
+
     /* サイドバー内 expander */
     [data-testid="stSidebar"] [data-testid="stExpander"] {
         background: rgba(255,255,255,0.05) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 12px !important;
+    }
+    /* サイドバー expander 開いたときの内側も同色 */
+    [data-testid="stSidebar"] [data-testid="stExpander"] details,
+    [data-testid="stSidebar"] [data-testid="stExpander"] details > div,
+    [data-testid="stSidebar"] [data-testid="stExpander"] > div,
+    [data-testid="stSidebar"] [data-testid="stExpander"] > div > div,
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"],
+    [data-testid="stSidebar"] [data-testid="stExpanderDetails"] > div {
+        background: rgba(255,255,255,0.05) !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] summary,
     [data-testid="stSidebar"] [data-testid="stExpander"] p,
