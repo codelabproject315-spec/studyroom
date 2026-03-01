@@ -386,14 +386,14 @@ st.markdown("""
         border-color: rgba(255,255,255,0.2) !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
-        background: rgba(102,126,234,0.35) !important;
-        border: 1px solid rgba(102,126,234,0.5) !important;
-        color: #fff !important;
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        color: #e7e9ea !important;
         font-weight: 700 !important;
         border-radius: 10px !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
-        background: rgba(102,126,234,0.55) !important;
+        background: rgba(255,255,255,0.15) !important;
     }
 
     /* ── メイン右カラム（ルーム追加パネル）── */
