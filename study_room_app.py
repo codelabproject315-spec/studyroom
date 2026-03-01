@@ -32,6 +32,24 @@ st.markdown("""
         font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
     }
 
+/* ── ブラウザUIツールバー類を非表示 ── */
+header[data-testid="stHeader"] { display: none !important; }
+#MainMenu { display: none !important; }
+.stDeployButton { display: none !important; }
+[data-testid="stToolbar"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+footer { visibility: hidden !important; display: none !important; }
+._profileContainer_gzau3_53 { display: none !important; }
+[data-testid="baseButton-headerNoPadding"] { display: none !important; }
+.viewerBadge_container__r5tak { display: none !important; }
+.viewerBadge_link__qRIco { display: none !important; }
+button[title="View fullscreen"] { display: none !important; }
+button[title="Share"] { display: none !important; }
+button[aria-label="Share"] { display: none !important; }
+[data-testid="manage-app-button"] { display: none !important; }
+[data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
+
     /* ── X風 全体背景（真っ黒） ── */
     .stApp { background: #000000; }
     .main { background: #000000; }
