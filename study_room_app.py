@@ -299,6 +299,24 @@ st.markdown("""
         border-color: #1d9bf0 !important;
         box-shadow: 0 0 0 2px rgba(29,155,240,0.2) !important;
     }
+    /* 入力ラッパー全域ダーク（baseweb/input の白背景を潰す） */
+    [data-baseweb="input"],
+    [data-baseweb="base-input"],
+    [data-baseweb="input"] > div,
+    [data-baseweb="base-input"] > div {
+        background: #000000 !important;
+        border-color: #2f3336 !important;
+    }
+    /* サイドバー内の入力ラッパーも同様に */
+    [data-testid="stSidebar"] [data-baseweb="input"],
+    [data-testid="stSidebar"] [data-baseweb="base-input"],
+    [data-testid="stSidebar"] [data-baseweb="input"] > div,
+    [data-testid="stSidebar"] [data-baseweb="base-input"] > div,
+    [data-testid="stSidebar"] [data-testid="stTextInputRootElement"],
+    [data-testid="stSidebar"] [data-testid="stTextInputRootElement"] > div {
+        background: #0d0d0d !important;
+        border-color: #2f3336 !important;
+    }
 
     /* ── Selectbox ダーク化 ── */
     [data-testid="stSelectbox"] > div > div,
