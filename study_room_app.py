@@ -63,17 +63,6 @@ st.markdown("""
         border-right: 1px solid #2f3336 !important;
     }
     [data-testid="stSidebar"] * { color: #e7e9ea !important; }
-    [data-testid="stSidebar"] .stButton > button {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
-        color: #e7e9ea !important;
-        border-radius: 10px !important;
-        font-size: 0.85rem !important;
-        transition: all 0.2s !important;
-    }
-    [data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255,255,255,0.15) !important;
-    }
     [data-testid="stSidebar"] .stTextInput input {
         background: rgba(255,255,255,0.06) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
@@ -314,6 +303,17 @@ st.markdown("""
     .stButton > button:disabled {
         background: #0d0d0d !important; color: #71767b !important;
         border-color: #2f3336 !important; opacity: 0.5 !important;
+    }
+    /* サイドバー内ボタンは半透明ダーク（上書き防止のため再宣言） */
+    [data-testid="stSidebar"] .stButton > button,
+    [data-testid="stSidebar"] .stButton > button:not([kind="primary"]) {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        color: #e7e9ea !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover,
+    [data-testid="stSidebar"] .stButton > button:not([kind="primary"]):hover {
+        background: rgba(255,255,255,0.15) !important;
     }
 
     /* ── ユーザー管理：ユーザー行カード（グリッド版） ── */
