@@ -821,6 +821,11 @@ def create_new_room(exam_name, url, user_name):
         })
     except: pass
 
+def delete_room(room_id):
+    try:
+        tbl_rooms().delete_item(Key={"item_id": room_id}); return True
+    except: return False
+
 def is_url_valid(url):
     return url.startswith("http://") or url.startswith("https://")
 
@@ -959,7 +964,18 @@ for idx, exam_name in enumerate(exam_names):
                             <a href="{room['url']}" target="_blank">{room['url']}</a>
                         </div>
                     </div>""", unsafe_allow_html=True)
-                    st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
+                    if is_admin:
+                        btn_col1, btn_col2 = st.columns([3, 1])
+                        with btn_col1:
+                            st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
+                        with btn_col2:
+                            if st.button("🗑️ 削除", key=f"del_room_{room['id']}", use_container_width=True):
+                                if delete_room(room['id']):
+                                    st.success("削除しました"); st.rerun()
+                                else:
+                                    st.error("削除に失敗しました")
+                    else:
+                        st.link_button("🚀 通話に参加する", room['url'], type="primary", use_container_width=True)
 
         with col_right:
             st.markdown('<div class="add-panel-wrap">', unsafe_allow_html=True)
