@@ -250,8 +250,10 @@ st.markdown("""
     [data-testid="stExpander"] span {
         color: #e7e9ea !important;
     }
-    /* expander 開閉どちらでも内側を強制ダーク */
-    [data-testid="stExpander"] *:not(button):not(input):not(select):not(textarea):not(a):not(svg):not(path) {
+    /* expander 開閉どちらでも内側を強制ダーク（ボタン・入力系は除外） */
+    [data-testid="stExpander"] div:not([class*="stButton"]),
+    [data-testid="stExpander"] section,
+    [data-testid="stExpander"] [data-testid="stVerticalBlock"] {
         background-color: #16181c !important;
     }
 
@@ -284,13 +286,35 @@ st.markdown("""
     }
 
     /* ── ボタン ── */
-    .stButton > button[kind="primary"] {
+    /* プライマリボタン：白背景＋黒文字（X風） */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="baseButton-primary"] {
         background: #e7e9ea !important; color: #000000 !important;
         border: none !important;
         border-radius: 10px !important; font-weight: 700 !important;
         transition: opacity 0.2s !important;
     }
-    .stButton > button[kind="primary"]:hover { opacity: 0.82 !important; }
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="baseButton-primary"]:hover { opacity: 0.82 !important; }
+
+    /* セカンダリ・通常ボタン：ダーク背景＋白文字 */
+    .stButton > button[kind="secondary"],
+    .stButton > button[data-testid="baseButton-secondary"],
+    .stButton > button:not([kind="primary"]) {
+        background: #16181c !important; color: #e7e9ea !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 10px !important; font-weight: 600 !important;
+        transition: background 0.2s !important;
+    }
+    .stButton > button[kind="secondary"]:hover,
+    .stButton > button:not([kind="primary"]):hover {
+        background: #1d1f23 !important; border-color: #71767b !important;
+    }
+    /* disabledボタン（自分自身削除不可など） */
+    .stButton > button:disabled {
+        background: #0d0d0d !important; color: #71767b !important;
+        border-color: #2f3336 !important; opacity: 0.5 !important;
+    }
 
     /* ── ユーザー管理：ユーザー行カード（グリッド版） ── */
     .user-row-card {
