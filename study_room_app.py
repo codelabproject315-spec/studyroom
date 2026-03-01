@@ -263,9 +263,16 @@ st.markdown("""
         color: #e8e8f0 !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] input {
-        background: #1a1a1a !important;
+        background: #111111 !important;
         color: #e8e8f0 !important;
-        border-color: #2f3336 !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stSelectbox"] > div > div {
+        background: #111111 !important;
+        border: 1px solid #2f3336 !important;
+        color: #e7e9ea !important;
+        border-radius: 8px !important;
     }
 
     /* ── テキスト入力・パスワード入力（全域ダーク）── */
@@ -370,25 +377,27 @@ st.markdown("""
 
     /* サイドバー内ボタン */
     [data-testid="stSidebar"] .stButton > button {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
+        background: #1a1a1a !important;
+        border: 1px solid #2f3336 !important;
         color: #e7e9ea !important;
         border-radius: 10px !important;
         font-size: 0.85rem !important;
     }
     [data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255,255,255,0.15) !important;
+        background: #242424 !important;
+        border-color: #555555 !important;
     }
     /* サイドバー expander 内ボタン */
     [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.12) !important;
+        background: #1a1a1a !important;
+        border: 1px solid #2f3336 !important;
         color: #e7e9ea !important;
         font-weight: 700 !important;
         border-radius: 10px !important;
     }
     [data-testid="stSidebar"] [data-testid="stExpander"] .stButton > button:hover {
-        background: rgba(255,255,255,0.15) !important;
+        background: #242424 !important;
+        border-color: #555555 !important;
     }
 
     /* ── メイン右カラム（ルーム追加パネル）── */
