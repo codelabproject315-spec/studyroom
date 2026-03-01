@@ -41,7 +41,6 @@ st.markdown("""
     [data-testid="stStatusWidget"] { display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     ._profileContainer_gzau3_53 { display: none !important; }
-    [data-testid="baseButton-headerNoPadding"] { display: none !important; }
     .viewerBadge_container__r5tak { display: none !important; }
     .viewerBadge_link__qRIco { display: none !important; }
     button[title="View fullscreen"] { display: none !important; }
@@ -49,6 +48,25 @@ st.markdown("""
     button[aria-label="Share"] { display: none !important; }
     [data-testid="manage-app-button"] { display: none !important; }
     [data-testid="stAppViewBlockContainer"] > div:first-child { padding-top: 1rem !important; }
+
+    /* ── サイドバー開閉ボタンをX風にスタイル ── */
+    [data-testid="baseButton-headerNoPadding"] {
+        display: flex !important;
+        background: #000000 !important;
+        color: #e7e9ea !important;
+        border: 1px solid #2f3336 !important;
+        border-radius: 8px !important;
+        position: fixed !important;
+        top: 0.6rem !important;
+        left: 0.6rem !important;
+        z-index: 999 !important;
+    }
+    [data-testid="baseButton-headerNoPadding"]:hover {
+        background: #16181c !important;
+    }
+    [data-testid="baseButton-headerNoPadding"] svg {
+        fill: #e7e9ea !important;
+    }
 
     /* ── X風 全体背景（真っ黒） ── */
     .stApp { background: #000000; }
