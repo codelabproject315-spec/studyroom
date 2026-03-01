@@ -61,7 +61,13 @@ st.markdown("""
         background: #000000 !important;
         border-right: 1px solid #2f3336 !important;
     }
-    [data-testid="stSidebar"] * { color: #e7e9ea !important; }
+
+    /* ── ★修正：* ではなく対象を絞る（開閉ボタン等への干渉を防ぐ）── */
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] div { color: #e7e9ea !important; }
+
     [data-testid="stSidebar"] .stTextInput input {
         background: #111111 !important;
         border: 1px solid #2f3336 !important;
